@@ -14,17 +14,7 @@ public class MembershipService {
         this.memberRegistry = memberRegistry;
     }
 
-    /*public Member registerMember(String name, String statusLevel) {
-        Member addMember = new Member(name, statusLevel);
-        memberRegistry.addMember(addMember);
-        return addMember;
-    }
 
-    public List<Member> listAllMembers() {
-        return memberRegistry.listAllMembers();
-    }
-
-     */
 
 
 

@@ -26,6 +26,11 @@ import java.util.Arrays;
 
 public class Main extends Application {
 
+
+    MemberRegistry memberRegistry = new MemberRegistry();
+    MembershipService membershipService = new MembershipService(memberRegistry);
+    //fillMemberList(membershipService);
+
     TableView<Member> memberTable;
     TextField nameInput, statusLevelInput;
 
@@ -95,8 +100,12 @@ public class Main extends Application {
         //Buttons
         //Add member
         Button addButton = new Button("Add member");
+        addButton.setOnAction(event -> addButtonClicked());
+
         //Delete member
         Button deleteButton = new Button("Remove member");
+        deleteButton.setOnAction(event -> deleteButtonClicked());
+
 
         HBox hBox = new HBox();
         hBox.setPadding(new Insets(10));
@@ -113,6 +122,19 @@ public class Main extends Application {
 
 
     }
+    public void addButtonClicked(){
+        Member member = new Member(nameInput.getText(), statusLevelInput.getText());
+        memberTable.getItems().add(member);
+        nameInput.clear();
+        statusLevelInput.clear();
+    }
+    public void deleteButtonClicked() {
+        ObservableList<Member> memberSelected, allMembers;
+        allMembers = memberTable.getItems();
+        memberSelected = memberTable.getSelectionModel().getSelectedItems();
+        memberSelected.forEach(allMembers::remove);
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -130,11 +152,8 @@ public class Main extends Application {
 }
 
 
-   /* MemberRegistry memberRegistry = new MemberRegistry();
-    MembershipService membershipService = new MembershipService(memberRegistry);
-    fillMemberList(membershipService);
 
-}
+/*
 private static void fillMemberList(MembershipService membershipService) {
     membershipService.registerMember("Ofelia", "standard");
     membershipService.registerMember("Lisa", "premium");
