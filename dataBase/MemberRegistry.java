@@ -1,40 +1,40 @@
 package com.Edstrom.dataBase;
 
 import com.Edstrom.entity.Member;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MemberRegistry {
 
-    public MemberRegistry() {}
 
-    private List<Member> memberList = new ArrayList<>();
+    private final ObservableList<Member> memberList = FXCollections.observableArrayList();
 
-    /*public void addMember(Member member) {memberList.put(member.getId(), member);
-    }
-    
-    public List<Member> listAllMembers() {return new ArrayList<>(this.memberList.getName());
-    }
+    public MemberRegistry(){
 
-    Metoder
+            memberList.add(new Member("FiaStina", "Student"));
+            memberList.add(new Member("LisaLasse", "Student"));
+            memberList.add(new Member("GulliGunnar", "Standard"));
+            memberList.add(new Member("StekarJanne", "Standard"));
+            memberList.add(new Member("ClaustHauler", "Premium"));
 
-
-    public Member findById(long id){return memberList.get(id);}
-
-    public Member findByName(String name) {
-        if (name == null) return null; {System.out.println("Member not found");}
-        for (Member member :memberList.values()) {
-            if (member.getName().equalsIgnoreCase(name)) {
-                return member;
-            }
         }
-        return null;
+
+    public ObservableList<Member> getMembers(){
+        return memberList;
+    }
+
+    public void saveMember(Member member){
+        memberList.add(member);
+    }
+    public void deleteMember(Member member) {
+        memberList.remove(member);
     }
 
 
-
-     */
 }
 
 

@@ -84,7 +84,7 @@ public class Main extends Application {
         });
 
         //add to tableView
-        memberTable.setItems(getMember());
+        memberTable.setItems(membershipService.getMembers());
         memberTable.getColumns().addAll(nameColumn, statusLevelColumn);
 
 
@@ -122,9 +122,20 @@ public class Main extends Application {
 
 
     }
-    public void addButtonClicked(){
+    /*public void addButtonClicked(){
         Member member = new Member(nameInput.getText(), statusLevelInput.getText());
         memberTable.getItems().add(member);
+        nameInput.clear();
+        statusLevelInput.clear();
+    }
+
+     */
+    public void addButtonClicked() {
+        membershipService.addMember(
+        nameInput.getText(),
+        statusLevelInput.getText(),
+        memberTable.getItems()
+        );
         nameInput.clear();
         statusLevelInput.clear();
     }
@@ -138,7 +149,7 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    public ObservableList<Member> getMember(){
+    /*public ObservableList<Member> getMember(){
         ObservableList<Member> members = FXCollections.observableArrayList();
 
         members.add(new Member("FiaStina", "Student"));
@@ -148,6 +159,8 @@ public class Main extends Application {
         members.add(new Member("ClaustHauler", "Premium"));
         return members;
     }
+
+     */
 
 }
 
