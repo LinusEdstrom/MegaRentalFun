@@ -1,6 +1,7 @@
 package com.Edstrom;
 
 import com.Edstrom.dataBase.MemberRegistry;
+import com.Edstrom.entity.Item;
 import com.Edstrom.entity.Member;
 import com.Edstrom.entity.StatusLevel;
 import com.Edstrom.service.MembershipService;
@@ -21,8 +22,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
+import javafx.util.converter.DoubleStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 public class Main extends Application {
 
@@ -32,16 +36,42 @@ public class Main extends Application {
     //fillMemberList(membershipService);
 
     TableView<Member> memberTable;
+    TableView<Item> itemTable;
     TextField nameInput, statusLevelInput;
 
     @Override
-    public void start(Stage primaryStage){
+    public void start(Stage primaryStage) {
         primaryStage.setTitle(" Welcome to membershipclub");
+
+        //itemTable
+        itemTable = new TableView();
+        itemTable.setEditable(true);    //Ändra i items
+
+        //columns
+        //Id
+        TableColumn<Item, String> idColumn = new TableColumn<>("Id");
+        idColumn.setMinWidth(150);  //set min för o inte klumpa ihop grejer.
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+
+        //Title
+        TableColumn<Item, String> titleColumn = new TableColumn<>("Title");
+        titleColumn.setMinWidth(200);
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+
+        //basePrice
+        TableColumn<Item, String> basePriceColumn = new TableColumn<>("Price");
+        basePriceColumn.setMinWidth(150);
+        basePriceColumn.setCellValueFactory(new PropertyValueFactory<>("basePrice"));
+
+        //Make columns editable with method makeEditableColumn
+        makeEditableStringColumn(itemTable, idColumn, Item::setId);
+        makeEditableStringColumn(itemTable, titleColumn, Item::setTitle);
+        makeEditableDoubleColumn(itemTable, basePriceColumn, Item::setBasePrice);
+
 
         //MemberTable
         memberTable = new TableView();
         memberTable.setEditable(true);      //För att ändra namn på en person ??
-
 
         //columns
         //Name
@@ -50,10 +80,10 @@ public class Main extends Application {
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         // För att ändra namn
         nameColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
-        nameColumn.setOnEditCommit(event ->{
-        Member changedMember = event.getRowValue();
-        changedMember.setName(event.getNewValue());
-        memberTable.refresh();
+        nameColumn.setOnEditCommit(event -> {
+            Member changedMember = event.getRowValue();
+            changedMember.setName(event.getNewValue());
+            memberTable.refresh();
         });
         nameColumn.setEditable(true);   //Hit ner yoyo
         //StatusLevel
@@ -67,11 +97,16 @@ public class Main extends Application {
 
         statusLevelColumn.setEditable(true);
         // ComboBox for enums
-        statusLevelColumn.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<String>(){
-        @Override
-        public String toString(String object){return object;}
-        @Override
-        public String fromString(String string) {return string;}
+        statusLevelColumn.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<String>() {
+            @Override
+            public String toString(String object) {
+                return object;
+            }
+
+            @Override
+            public String fromString(String string) {
+                return string;
+            }
         }, statusChoice.toArray(new String[0])));
         // Write string back to member
         statusLevelColumn.setOnEditCommit(memberStringCellEditEvent -> {
@@ -122,6 +157,7 @@ public class Main extends Application {
 
 
     }
+
     /*public void addButtonClicked(){
         Member member = new Member(nameInput.getText(), statusLevelInput.getText());
         memberTable.getItems().add(member);
@@ -132,11 +168,12 @@ public class Main extends Application {
      */
     public void addButtonClicked() {
         membershipService.addMember(
-        nameInput.getText(),
-        statusLevelInput.getText());
+                nameInput.getText(),
+                statusLevelInput.getText());
         nameInput.clear();
         statusLevelInput.clear();
     }
+
     public void deleteButtonClicked() {
         ObservableList<Member> memberSelected, allMembers;
         allMembers = memberTable.getItems();
@@ -144,8 +181,54 @@ public class Main extends Application {
         memberSelected.forEach(allMembers::remove);
     }
 
+    /* Metod för att göra alla String columns i items editable. Swenglish!!
+        private <T> void makeEditableColumn(
+            TableView<T> itemTable,
+            TableColumn<T, String> column,
+            BiConsumer<T, String> setter //Takes the two arguments and returns nothing.
+    ) {
+        column.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+        column.setOnEditCommit(event -> {   //som en setOnAction med setOnEditCommit istället
+            T rowData = event.getRowValue();
+            setter.accept(rowData, event.getNewValue());
+            itemTable.refresh();
+        });
+        column.setEditable(true);
+    }
+
+     */
+
+    private <T> void makeEditableStringColumn(
+            TableView<T> table, // itemTable     // Gör en Overload för Doubles också, lär ju ska ha en för ints osså, lööööl
+            TableColumn<T, String> column,
+            BiConsumer<T, String> setter
+    ) {
+        column.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
+        column.setOnEditCommit(event -> {
+            T rowData = event.getRowValue();
+            setter.accept(rowData, event.getNewValue());
+            table.refresh();    // Kanske inte behövs ??
+        });
+        column.setEditable(true);
+    }
+    private <T> void makeEditableDoubleColumn(
+            TableView<T> table, // itemTable     // Gör en Overload för Doubles också, lär ju ska ha en för ints osså, lööööl
+            TableColumn<T, Double> column,
+            BiConsumer<T, Double> setter
+    ) {
+        column.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+        column.setOnEditCommit(event -> {
+            T rowData = event.getRowValue();
+            setter.accept(rowData, event.getNewValue());
+            table.refresh();    // Kanske inte behövs ??
+        });
+        column.setEditable(true);
+    }
     public static void main(String[] args) {
         launch(args);
+}
+
+
     }
     /*public ObservableList<Member> getMember(){
         ObservableList<Member> members = FXCollections.observableArrayList();
@@ -160,7 +243,7 @@ public class Main extends Application {
 
      */
 
-}
+
 
 
 
