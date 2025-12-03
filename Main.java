@@ -133,9 +133,7 @@ public class Main extends Application {
     public void addButtonClicked() {
         membershipService.addMember(
         nameInput.getText(),
-        statusLevelInput.getText(),
-        memberTable.getItems()
-        );
+        statusLevelInput.getText());
         nameInput.clear();
         statusLevelInput.clear();
     }
