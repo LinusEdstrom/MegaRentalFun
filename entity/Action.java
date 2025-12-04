@@ -12,7 +12,7 @@ public class Action extends Item {
         super();
     }
 
-    public Action(String id, String title, double basePrice, int length, int explosions, int coolOneliners){
+    public Action(int id, String title, double basePrice, int length, int explosions, int coolOneliners){
         super(id,title, basePrice);
         this.length = length;
         this.explosions = explosions;

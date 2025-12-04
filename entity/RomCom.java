@@ -12,7 +12,7 @@ public class RomCom extends Item {
 
     public RomCom() {}
 
-    public RomCom(String id, String title, double price, int length, int cheeziness, int hunks) {
+    public RomCom(int id, String title, double price, int length, int cheeziness, int hunks) {
         super(id, title, price);
         this.length = length;
         this.cheeziness = cheeziness;

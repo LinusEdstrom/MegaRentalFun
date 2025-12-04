@@ -53,14 +53,14 @@ public class Main extends Application {
 
         //columns
         //Id
-        TableColumn<Item, String> itemIdColumn = new TableColumn<>("item-Id");
+        TableColumn<Item, Integer> itemIdColumn = new TableColumn<>("item-Id");
         itemIdColumn.setMinWidth(150);  //set min för o inte klumpa ihop grejer.
         itemIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
 
         //Title
         TableColumn<Item, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setMinWidth(200);
-        itemIdColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 
         //basePrice
         TableColumn<Item, Double> basePriceColumn = new TableColumn<>("Price");
@@ -68,7 +68,7 @@ public class Main extends Application {
         basePriceColumn.setCellValueFactory(new PropertyValueFactory<>("basePrice"));
 
         //Make columns editable with method makeEditableColumn
-        makeEditableStringColumn(itemTable, itemIdColumn, Item::setId);
+        makeEditableIntColumn(itemTable, itemIdColumn, Item::setId);
         makeEditableStringColumn(itemTable, titleColumn, Item::setTitle);
         //this.<Item>
         makeEditableDoubleColumn(itemTable, basePriceColumn, Item::setBasePrice);
@@ -234,28 +234,55 @@ public class Main extends Application {
             BiConsumer<T, String> setter
     ) {
         column.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
-        column.setOnEditCommit(event -> {
-            T rowData = event.getRowValue();
-            setter.accept(rowData, event.getNewValue());
+        column.setOnEditCommit(eventString -> {
+            T rowData = eventString.getRowValue();
+            setter.accept(rowData, eventString.getNewValue());
             table.refresh();    // Kanske inte behövs ??
         });
         column.setEditable(true);
     }
-
-    private <T> void makeEditableDoubleColumn(
+    private <T> void makeEditableIntColumn(
             TableView<T> table, // itemTable     // Gör en Overload för Doubles också, lär ju ska ha en för ints osså, lööööl
+            TableColumn<T, Integer> column,
+            BiConsumer<T, Integer> setter
+    ) {
+            column.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Integer>() {
+            @Override
+            public String toString(Integer value) {
+                return value == null ? "" : value.toString();
+            }
+            @Override
+            public Integer fromString(String string) {
+                try {
+                    return string == null || string.isEmpty() ? 0 : Integer.parseInt(string);
+                } catch (NumberFormatException e) {// Fixa Exception heina
+                    return 0;
+                }
+                }
+                }));
+             column.setOnEditCommit(eventInt -> {
+            T rowData = eventInt.getRowValue();
+            Integer newValue = eventInt.getNewValue();
+                 if(newValue !=null) {
+                     setter.accept(rowData, newValue);
+                 }
+                table.refresh();    // Kanske inte behövs ??
+                });
+                column.setEditable(true);
+                }
+    private <T> void makeEditableDoubleColumn(
+            TableView<T> table,
             TableColumn<T, Double> column,
             BiConsumer<T, Double> setter
     ) {
         column.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
-        column.setOnEditCommit(event -> {
-            T rowData = event.getRowValue();
-            setter.accept(rowData, event.getNewValue());
-            table.refresh();    // Kanske inte behövs ??
+        column.setOnEditCommit(eventDouble -> {
+            T rowData = eventDouble.getRowValue();
+            setter.accept(rowData, eventDouble.getNewValue());
+            table.refresh();
         });
         column.setEditable(true);
     }
-
     public static void main(String[] args) {
         launch(args);
     }

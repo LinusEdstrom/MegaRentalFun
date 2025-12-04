@@ -6,7 +6,7 @@ public abstract class Item {
 
     //attribute
 
-    protected String id;
+    protected int id;
     protected String title;
     protected double basePrice;
     private boolean rented;
@@ -14,17 +14,17 @@ public abstract class Item {
     public Item(){}
 
 
-    public Item(String id, String title, double basePrice) {
+    public Item(int id, String title, double basePrice) {
         this.id = id;
         this.title = title;
         this.rented = false;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
