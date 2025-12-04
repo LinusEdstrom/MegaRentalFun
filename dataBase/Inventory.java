@@ -2,14 +2,25 @@ package com.Edstrom.dataBase;
 
 import com.Edstrom.entity.Action;
 import com.Edstrom.entity.Item;
+import com.Edstrom.entity.Member;
 import com.Edstrom.entity.RomCom;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Inventory {
 
-    private final List<Item> inventoryList = new ArrayList<>();
+    private final ObservableList<Item> inventoryList = FXCollections.observableArrayList();
+
+        
+
+
+
+    public ObservableList<Item> getItems() {
+        return inventoryList;
+    }
 
     /*public Item findByTitle(String title){
         String search = title.trim();

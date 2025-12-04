@@ -8,7 +8,9 @@ public class Action extends Item {
     private int explosions;
     private int coolOneliners;
 
-    public Action() {}
+    public Action() {
+        super();
+    }
 
     public Action(String id, String title, double basePrice, int length, int explosions, int coolOneliners){
         super(id,title, basePrice);

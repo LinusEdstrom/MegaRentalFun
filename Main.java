@@ -1,10 +1,12 @@
 package com.Edstrom;
 
+import com.Edstrom.dataBase.Inventory;
 import com.Edstrom.dataBase.MemberRegistry;
 import com.Edstrom.entity.Item;
 import com.Edstrom.entity.Member;
 import com.Edstrom.entity.StatusLevel;
 import com.Edstrom.service.MembershipService;
+import com.Edstrom.service.RentalService;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,11 +35,13 @@ public class Main extends Application {
 
     MemberRegistry memberRegistry = new MemberRegistry();
     MembershipService membershipService = new MembershipService(memberRegistry);
+    Inventory inventory = new Inventory();
+    RentalService rentalService = new RentalService(inventory);
     //fillMemberList(membershipService);
 
     TableView<Member> memberTable;
     TableView<Item> itemTable;
-    TextField nameInput, statusLevelInput;
+    TextField nameInput, statusLevelInput, idInput, titleInput, basePriceInput;
 
     @Override
     public void start(Stage primaryStage) {
@@ -59,20 +63,36 @@ public class Main extends Application {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 
         //basePrice
-        TableColumn<Item, String> basePriceColumn = new TableColumn<>("Price");
+        TableColumn<Item, Double> basePriceColumn = new TableColumn<>("Price");
         basePriceColumn.setMinWidth(150);
         basePriceColumn.setCellValueFactory(new PropertyValueFactory<>("basePrice"));
 
         //Make columns editable with method makeEditableColumn
         makeEditableStringColumn(itemTable, idColumn, Item::setId);
         makeEditableStringColumn(itemTable, titleColumn, Item::setTitle);
+        //this.<Item>
         makeEditableDoubleColumn(itemTable, basePriceColumn, Item::setBasePrice);
 
+        itemTable.setItems(rentalService.getItems());
+        itemTable.getColumns().addAll(idColumn, titleColumn, basePriceColumn);
 
         //MemberTable
         memberTable = new TableView();
         memberTable.setEditable(true);      //För att ändra namn på en person ??
 
+        //Inputs textfields
+        //Id
+        idInput = new TextField();
+        idInput.setPromptText("ID");
+        idInput.setMinWidth(80);     //Behövs bara i första så följer resten bredden.
+        //Title
+        titleInput = new TextField();
+        titleInput.setPromptText("Title");
+        //Price
+        basePriceInput = new TextField();
+        basePriceInput.setPromptText("price");
+
+        //TODO MEMBERTABLE
         //columns
         //Name
         TableColumn<Member, String> nameColumn = new TableColumn<>("NAME");
@@ -149,7 +169,7 @@ public class Main extends Application {
 
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(memberTable, hBox);
+        vBox.getChildren().addAll(memberTable, hBox, itemTable);
 
         Scene scene = new Scene(vBox);
         primaryStage.setScene(scene);
