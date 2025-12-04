@@ -15,13 +15,13 @@ public class MembershipService {
         this.memberRegistry = memberRegistry;
     }
 
-    public Member addMember(String name, String statusLevel) {
+    public Member addMember(int id, String name, String statusLevel) {
 
         // Här ska det in fett med Exception try catch stuff
          if(name == null || name.isEmpty() || statusLevel == null || statusLevel.isEmpty()) {
              return null;
          }
-        Member newMember = new Member(name.trim(), statusLevel.trim());
+        Member newMember = new Member(id, name.trim(), statusLevel.trim());
         //addedMember.add(newMember); // Blev ju dubbleter när de sparas dubbel vilket ju inte behövs när
         //ObservableList uppdaterar UI på studs. Heja heja!!!
 

@@ -21,6 +21,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.util.Arrays;
 
@@ -32,7 +33,7 @@ public class Main extends Application {
     //fillMemberList(membershipService);
 
     TableView<Member> memberTable;
-    TextField nameInput, statusLevelInput;
+    TextField idInput, nameInput, statusLevelInput;
 
     @Override
     public void start(Stage primaryStage){
@@ -44,6 +45,17 @@ public class Main extends Application {
 
 
         //columns
+        //Id
+        TableColumn<Member, Integer> idColumn = new TableColumn<>("Id number");
+        idColumn.setMinWidth(100);
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        //För att ändra id
+        idColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        idColumn.setOnEditCommit(event -> {
+        Member idChangedMember = event.getRowValue();
+        idChangedMember.setId(event.getNewValue());
+        memberTable.refresh();
+        });
         //Name
         TableColumn<Member, String> nameColumn = new TableColumn<>("NAME");
         nameColumn.setMinWidth(150);    //newBoston körde 200
@@ -55,6 +67,7 @@ public class Main extends Application {
         changedMember.setName(event.getNewValue());
         memberTable.refresh();
         });
+
         nameColumn.setEditable(true);   //Hit ner yoyo
         //StatusLevel
         TableColumn<Member, String> statusLevelColumn = new TableColumn<>("Statuslevel");
@@ -85,10 +98,14 @@ public class Main extends Application {
 
         //add to tableView
         memberTable.setItems(membershipService.getMembers());
-        memberTable.getColumns().addAll(nameColumn, statusLevelColumn);
+        memberTable.getColumns().addAll(idColumn, nameColumn, statusLevelColumn);
 
 
         //Inputs textfields
+        //Id
+        idInput = new TextField();
+        idInput.setPromptText("Id");
+        idInput.setMinWidth(60);
         //Name
         nameInput = new TextField();
         nameInput.setPromptText("Name");
@@ -110,7 +127,7 @@ public class Main extends Application {
         HBox hBox = new HBox();
         hBox.setPadding(new Insets(10));
         hBox.setSpacing(10);
-        hBox.getChildren().addAll(nameInput, statusLevelInput, addButton, deleteButton);
+        hBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton);
 
 
         VBox vBox = new VBox();
@@ -122,18 +139,13 @@ public class Main extends Application {
 
 
     }
-    /*public void addButtonClicked(){
-        Member member = new Member(nameInput.getText(), statusLevelInput.getText());
-        memberTable.getItems().add(member);
-        nameInput.clear();
-        statusLevelInput.clear();
-    }
-
-     */
+        // TODO METODER
     public void addButtonClicked() {
         membershipService.addMember(
+                Integer.parseInt(idInput.getText()),  // Här ska det in nå fina Exceptions osså
         nameInput.getText(),
         statusLevelInput.getText());
+        idInput.clear();
         nameInput.clear();
         statusLevelInput.clear();
     }
@@ -147,18 +159,19 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    /*public ObservableList<Member> getMember(){
+
+    public ObservableList<Member> getMember(){
         ObservableList<Member> members = FXCollections.observableArrayList();
 
-        members.add(new Member("FiaStina", "Student"));
-        members.add(new Member("LisaLasse", "Student"));
-        members.add(new Member("GulliGunnar", "Standard"));
-        members.add(new Member("StekarJanne", "Standard"));
-        members.add(new Member("ClaustHauler", "Premium"));
+        members.add(new Member(1,"FiaStina", "Student"));
+        members.add(new Member(2,"LisaLasse", "Student"));
+        members.add(new Member(3,"GulliGunnar", "Standard"));
+        members.add(new Member(4,"StekarJanne", "Standard"));
+        members.add(new Member(5,"ClaustHauler", "Premium"));
         return members;
     }
 
-     */
+
 
 }
 

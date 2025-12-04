@@ -8,8 +8,7 @@ public class Member {
 
     //attribut
 
-    private static long nextId = 1;
-    private long id;        //removed final so I can have empty constructor with Json/jackson
+    private int id;        //removed final so I can have empty constructor with Json/jackson
     private String name;
     private String statusLevel;
     // private List<Rental> history;
@@ -17,21 +16,21 @@ public class Member {
     //konstruktorer
 
     public Member(){
-        this.id = nextId++;
+
     }
 
-    public Member(String name, String statusLevel) {
-        this.id = nextId++;
+    public Member(int id,String name, String statusLevel) {
+        this.id = id;
         this.name = name;
         this.statusLevel = statusLevel;
        // this.history = new ArrayList<>();
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {this.id = id;}  // Jacksoon will use this for deserializing.
+    public void setId(int id) {this.id = id;}  // Jacksoon will use this for deserializing.
 
     public String getName() {
         return name;
@@ -49,8 +48,6 @@ public class Member {
         this.statusLevel = statusLevel;
     }
 
-    // Sätter id rätt vid deserialiseringen med Json, men vete fan om det ens behövs.
-    public static void setNextId(long next) {nextId = next;}
 
     /*public List<Rental> getHistory() {
         return history;

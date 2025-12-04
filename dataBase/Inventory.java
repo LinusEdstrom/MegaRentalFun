@@ -1,15 +1,19 @@
 package com.Edstrom.dataBase;
 
-import com.Edstrom.entity.Action;
 import com.Edstrom.entity.Item;
 import com.Edstrom.entity.RomCom;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Inventory {
+public class Inventory extends PersistenceLayer {
 
-    private final List<Item> inventoryList = new ArrayList<>();
+    private final List<Item> inventoryList = new ArrayList<>(
+        //    inventoryList.add(new RomCom("Idination", "Boombsday", 34, 120, 12, 2)),
+          //  inventoryList.add(new RomCom("Idinat", "Cute Duves", 32, 105, 10, 1)),
+            //inventoryList.add(new RomCom("Idination", "Boombsday", 38, 160, 18, 3))
+    );
+
 
     /*public Item findByTitle(String title){
         String search = title.trim();
