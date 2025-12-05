@@ -15,9 +15,8 @@ import java.util.List;
 
 public class MemberRegistry extends PersistenceLayer {
 
-    private static final String FILE_PATH = "memberList.json";private final ObservableList<Member> memberList = FXCollections.observableArrayList();
+    private final ObservableList<Member> memberList = FXCollections.observableArrayList();
     private final File jsonMembers = new File("memberList.json");
-
 
 
     public MemberRegistry(){

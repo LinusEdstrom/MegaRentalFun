@@ -17,6 +17,7 @@ public abstract class Item {
     public Item(int id, String title, double basePrice) {
         this.id = id;
         this.title = title;
+        this.basePrice = basePrice;
         this.rented = false;
     }
 

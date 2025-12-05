@@ -20,16 +20,22 @@ public class RomCom extends Item {
     }
 
     public int getLength(){return length;}
+    public void setLength(int length){
+        this.length = length;
+    }
 
     public void setCheeziness(int cheeziness) {
         this.cheeziness = cheeziness;}
+
     public void setHunks(int hunks) {
         this.hunks = hunks;}
 
     public int getCheeziness(){return cheeziness;}
     public int getHunks(){return hunks;}
 
-}
+
+    }
+
 
 
 

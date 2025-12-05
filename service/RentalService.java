@@ -15,4 +15,13 @@ private final Inventory inventory;
 
     public ObservableList<Item> getItems() {return inventory.getItems();
     }
-}
+    public void addItem(Item newItem) {
+        if (newItem == null){
+            throw new IllegalArgumentException("Where is the item ?");
+        }
+        inventory.addItem(newItem);
+        }
+
+    }
+
+
