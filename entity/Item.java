@@ -9,7 +9,7 @@ public abstract class Item {
     protected int id;
     protected String title;
     protected double basePrice;
-    private boolean rented;
+    private boolean available = true;
 
     public Item(){}
 
@@ -18,7 +18,7 @@ public abstract class Item {
         this.id = id;
         this.title = title;
         this.basePrice = basePrice;
-        this.rented = false;
+
     }
 
     public int getId() {
@@ -41,11 +41,9 @@ public abstract class Item {
         this.basePrice = basePrice;
     }
 
-    public boolean isRented() {return rented;}
+    public boolean isAvailable() {return available;}
 
-    public void rentOut(){rented = true;}
-
-    public void returnItem(){rented = false;}
+    public void setAvailable(boolean available){this.available = available;}
 
     //public abstract double getPricePerDay();    //En override som gick till Dvd, för att få return basePrice
 }

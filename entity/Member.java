@@ -1,5 +1,8 @@
 package com.Edstrom.entity;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +14,7 @@ public class Member {
     private int id;        //removed final so I can have empty constructor with Json/jackson
     private String name;
     private String statusLevel;
-    // private List<Rental> history;
+    private final ObservableList<Rental> rentalHistory = FXCollections.observableArrayList();
 
     //konstruktorer
 
@@ -23,7 +26,7 @@ public class Member {
         this.id = id;
         this.name = name;
         this.statusLevel = statusLevel;
-       // this.history = new ArrayList<>();
+
     }
 
     public int getId() {
@@ -48,23 +51,13 @@ public class Member {
         this.statusLevel = statusLevel;
     }
 
-
-    /*public List<Rental> getHistory() {
-        return history;
+    public ObservableList<Rental> getRentalHistory() {
+        return rentalHistory;
     }
 
     public void addRentalToHistory(Rental rental) {
-        history.add(rental);
+        rentalHistory.add(rental);
     }
-
-
-
-    @Override
-    public String toString() {
-        return "[" + id +"] " + name + " (" + statusLevel + " - " + history.size() + " rentals  )";
-    }
-
-     */
 
 }
 

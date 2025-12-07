@@ -38,6 +38,7 @@ public class Inventory extends PersistenceLayer {
             );
         }
         inventoryList.add(newItem);
+        saveItemFile();
     }
     private void loadFromFile(){
         if(!jsonItems.exists()) {
@@ -51,45 +52,15 @@ public class Inventory extends PersistenceLayer {
         }
 
     }
+    private void saveItemFile(){
+        try {
+            mapper.writeValue(jsonItems, new ArrayList<>(inventoryList));
+        }catch (IOException e){
+            System.out.println("Crash and burn" + e.getMessage());
+        }
+    }
 }
-    /*public Item findByTitle(String title){
-        String search = title.trim();
-        for(Item item : inventoryList) {
-            if (item.getTitle().equalsIgnoreCase(title))
-                return item;
-        }
-        return null;
-    }
 
-    public Action createAndAddAction(String title, double price, int length, int explosions, int coolOneliners){
-        Action action = new Action(title, price, length, explosions, coolOneliners);
-        inventoryList.add(action);
-        return action;
-    }
-    public RomCom createAndAddRomCom(String title, double price, int length, int cheeziness, int hunks){
-        RomCom romCom = new RomCom(title, price, length, cheeziness, hunks);
-        inventoryList.add(romCom);
-        return romCom;
-    }
-    public List<Action> actionList() {
-        List<Action> actionList = new ArrayList<>();
-        for (Item item : inventoryList) {
-            if (item instanceof Action action) {
-                actionList.add(action);}
-        }
-        return actionList;
-    }
-
-    public List<RomCom> romComList() {
-        List<RomCom> romComList = new ArrayList<>();
-        for (Item item : inventoryList) {
-            if (item instanceof RomCom romCom) {
-                romComList.add(romCom); }
-        }
-        return romComList;
-    }
-
-     */
 
 
 

@@ -6,7 +6,9 @@ import com.Edstrom.entity.*;
 import com.Edstrom.service.MembershipService;
 import com.Edstrom.service.RentalService;
 import javafx.application.Application;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -23,6 +25,7 @@ import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
 
@@ -57,7 +60,26 @@ public class Main extends Application {
         TableColumn<Item, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setMinWidth(200);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-
+        // Testar göra title röd när det är uthyrt
+        titleColumn.setCellFactory(rentedColumn -> new TableCell<Item, String>(){
+        @Override
+        protected void updateItem(String title, boolean empty) {
+            super.updateItem(title, empty);
+            if(empty || title == null) {
+                setText(null);
+                setGraphic(null);
+                setStyle("");
+            }else {
+                setText(title);
+                Item currentItem = getTableView().getItems().get(getIndex());
+                if(!currentItem.isAvailable()){
+                    setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+                }else{
+                    setStyle("");
+                }
+            }
+        }
+        });
         //basePrice
         TableColumn<Item, Double> basePriceColumn = new TableColumn<>("Price");
         basePriceColumn.setMinWidth(150);
@@ -287,6 +309,11 @@ public class Main extends Application {
         statusLevelInput.setPromptText("Statuslevel");
 
         //Buttons
+
+        //Rent button
+        Button rentButton = new Button("Rent");
+        rentButton.setOnAction(rentEvent -> rentButtonClicked());
+
         //Add member
         Button addButton = new Button("Add member");
         addButton.setOnAction(event -> addButtonClicked());
@@ -315,7 +342,45 @@ public class Main extends Application {
 
     }
 
-    // TODO METODER
+    // TODO METODER, LURIGT FÖR DEN SKA JU HÄMTA BÅDE MEMBER OCH ITEM HMM...
+    //Blir så mycket skit här inne alltså, Limpan höga knän för helvete!!!
+
+    public void rentButtonClicked(){
+        Member selectedMember = memberTable.getSelectionModel().getSelectedItem();
+        Item selectedItem = itemTable.getSelectionModel().getSelectedItem();
+        if(selectedMember == null || selectedItem == null){
+            new Alert(Alert.AlertType.WARNING, "U have to select booth a member and an item!").showAndWait();
+            return;
+        }
+        if(selectedItem instanceof Item && !selectedItem.isAvailable()){
+            new Alert(Alert.AlertType.WARNING, "It is allready rented!").showAndWait();
+            return;
+        }
+        /* Prevent renting same item twice:
+        boolean alreadyRented = rentals.stream()
+                .anyMatch(r -> r.getItem() != null && r.getItem().getId() == selectedItem.getId());
+        if (alreadyRented) {
+            new Alert(Alert.AlertType.WARNING, "Item already rented in active rentals.").showAndWait();
+            return;
+        }
+
+         */
+        LocalDate rentingDate = LocalDate.now();
+        LocalDate returnDate = null;
+
+        // RentalMirr, member, item, reningdate, returndate
+        Rental rentalMirr = new Rental(selectedMember, selectedItem, rentingDate, returnDate);
+        //Visa på rentals tableView, ska jag ens ha en ??
+        //rentals.add(rentalMirr);
+        //Viktig skicka till member rentalhistory listan
+        selectedMember.getRentalHistory().add(rentalMirr);
+        //Markera som hyrd
+        if(selectedItem instanceof Item) {
+            ((Item) selectedItem).setAvailable(false);
+        }
+
+    }
+
     public void addButtonClicked() {
         membershipService.addMember(
                 Integer.parseInt(idInput.getText()),  // Här ska det in nå fina Exceptions osså
@@ -325,17 +390,6 @@ public class Main extends Application {
         nameInput.clear();
         statusLevelInput.clear();
     }
-    /*public void addItemClicked(){
-        rentalService.addItem(
-                Integer.parseInt(itemIdInput.getText()),
-                titleInput.getText(),
-                basePriceInput.getText());
-        itemIdInput.clear();
-        titleInput.clear();
-        basePriceInput.clear();
-    }
-
-     */
 
     public void deleteButtonClicked() {
         ObservableList<Member> memberSelected, allMembers;
