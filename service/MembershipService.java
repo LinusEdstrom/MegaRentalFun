@@ -46,4 +46,7 @@ public class MembershipService {
     public ObservableList<Member> getMembers(){
         return memberRegistry.getMembers();
     }
+    public void updateMember(Member member){
+        memberRegistry.updateMember(member);
+    }
 }

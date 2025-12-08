@@ -76,6 +76,13 @@ public class MemberRegistry extends PersistenceLayer {
             System.out.println("Crash and burn" + e.getMessage());
         }
     }
+    public void updateMember(Member updateMember){
+        int index = memberList.indexOf(updateMember);
+        if(index >= 0) {
+            memberList.set(index, updateMember);
+            saveMemberFile();
+        }
+    }
 
     }
 

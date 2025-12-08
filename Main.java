@@ -243,7 +243,9 @@ public class Main extends Application {
         idColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         idColumn.setOnEditCommit(event -> {
             Member idChangedMember = event.getRowValue();
-            idChangedMember.setId(event.getNewValue());
+            int newValue = event.getNewValue();
+            idChangedMember.setId(newValue);
+            membershipService.updateMember(idChangedMember);
             memberTable.refresh();
         });
         //Name
@@ -254,7 +256,9 @@ public class Main extends Application {
         nameColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DefaultStringConverter()));
         nameColumn.setOnEditCommit(event -> {
             Member changedMember = event.getRowValue();
-            changedMember.setName(event.getNewValue());
+            String newValue = event.getNewValue();
+            changedMember.setName(newValue);
+            membershipService.updateMember(changedMember);
             memberTable.refresh();
         });
         nameColumn.setEditable(true);   //Hit ner yoyo
@@ -325,7 +329,7 @@ public class Main extends Application {
         HBox memberBox = new HBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
-        memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton);
+        memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton, rentButton);
 
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
@@ -349,11 +353,11 @@ public class Main extends Application {
         Member selectedMember = memberTable.getSelectionModel().getSelectedItem();
         Item selectedItem = itemTable.getSelectionModel().getSelectedItem();
         if(selectedMember == null || selectedItem == null){
-            new Alert(Alert.AlertType.WARNING, "U have to select booth a member and an item!").showAndWait();
+            showAlert(Alert.AlertType.WARNING,"Error", "U have to select booth a member and an item!");
             return;
         }
         if(selectedItem instanceof Item && !selectedItem.isAvailable()){
-            new Alert(Alert.AlertType.WARNING, "It is allready rented!").showAndWait();
+            showAlert(Alert.AlertType.WARNING, "Oh no!", "It is allready rented!");
             return;
         }
         /* Prevent renting same item twice:
