@@ -5,6 +5,8 @@ import com.Edstrom.entity.Item;
 import com.Edstrom.entity.Member;
 import com.Edstrom.entity.RomCom;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -40,26 +42,48 @@ public class Inventory extends PersistenceLayer {
         inventoryList.add(newItem);
         saveItemFile();
     }
-    private void loadFromFile(){
-        if(!jsonItems.exists()) {
-            // Exception}
+
+    private void loadFromFile() {
+        System.out.println("Loading inventory from " + jsonItems.getAbsolutePath());
+        if (!jsonItems.exists()) {
+
+            try {
+                jsonItems.createNewFile();
+                mapper.writeValue(jsonItems, new ArrayList<>());
+
+            } catch (IOException e) { //Exceptions
+                e.printStackTrace();
+            }
             return;
         }
         try {
-            List<Item> items = mapper.readValue(jsonItems, new TypeReference<List<Item>>(){});
-            inventoryList.addAll(items);
-        }catch(IOException e) { //Exceptions
+            List<Item> fileItems = mapper.readValue(jsonItems, new TypeReference<List<Item>>() {
+            });
+            inventoryList.setAll(fileItems);
+        } catch (IOException e) {
+            System.out.println("Failed to read items from file");
+            e.printStackTrace();
         }
+    }
 
-    }
-    private void saveItemFile(){
+    private void saveItemFile() {
         try {
-            mapper.writeValue(jsonItems, new ArrayList<>(inventoryList));
-        }catch (IOException e){
+            // Build array with type field
+            ArrayNode nodeSubObject = mapper.createArrayNode();
+            for(Item savedItem : inventoryList){
+                ObjectNode savedObjectNode = mapper.valueToTree(savedItem); // Item becomes Node.
+                String typeName = savedItem.getClass().getSimpleName();
+                savedObjectNode.put("type", typeName);
+                nodeSubObject.add(savedObjectNode);
+            }
+            mapper.writeValue(jsonItems, nodeSubObject);
+        } catch (IOException e) {
             System.out.println("Crash and burn" + e.getMessage());
+            e.printStackTrace();
         }
     }
-}
+    }
+
 
 
 

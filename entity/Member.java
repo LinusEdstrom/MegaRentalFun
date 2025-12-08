@@ -1,5 +1,6 @@
 package com.Edstrom.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -14,6 +15,7 @@ public class Member {
     private int id;        //removed final so I can have empty constructor with Json/jackson
     private String name;
     private String statusLevel;
+    @JsonIgnore
     private final ObservableList<Rental> rentalHistory = FXCollections.observableArrayList();
 
     //konstruktorer

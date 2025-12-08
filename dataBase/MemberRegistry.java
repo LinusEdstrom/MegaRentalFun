@@ -14,20 +14,28 @@ import java.util.List;
 
 
 public class MemberRegistry extends PersistenceLayer {
+    //instance
+    private static MemberRegistry instance;
 
     private final ObservableList<Member> memberList = FXCollections.observableArrayList();
     private final File jsonMembers = new File("memberList.json");
 
-
     public MemberRegistry(){
         loadMemberFile();
         }
+    // Gör den till en instance
+     public static MemberRegistry getInstance(){
+        if(instance == null){
+            instance = new MemberRegistry();
+         }
+        return instance;
+     }
 
     public ObservableList<Member> getMembers(){
         return memberList;
     }
 
-    public void saveMember(Member member){
+    public void saveMember(Member member) throws IOException{
         memberList.add(member);
         saveMemberFile();
     }
@@ -35,6 +43,21 @@ public class MemberRegistry extends PersistenceLayer {
         memberList.remove(member);
         saveMemberFile();
     }
+    public boolean removeMemberById(int id){
+        Member deletedMember = memberList.stream()
+                .filter(delMember -> delMember.getId() == id)
+                .findFirst()
+                .orElse(null);
+
+        if(deletedMember == null) {
+            System.out.println("No member with id " + id);
+            return false;
+        }
+        boolean removed = memberList.remove(deletedMember);
+        saveMemberFile();
+        return true;
+        }
+
     private void loadMemberFile()   {
         if(!jsonMembers.exists()) return;   //Behövs ju bara i början eller om nån nallat listan, voi voi
 

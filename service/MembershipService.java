@@ -15,32 +15,33 @@ public class MembershipService {
         this.memberRegistry = memberRegistry;
     }
 
-    public Member addMember(int id, String name, String statusLevel) {
+    public void addMember(int id, String name, String statusLevel) {
 
-        // Här ska det in fett med Exception try catch stuff
+        try{
+            // Här ska det in fett med Exception try catch stuff
          if(name == null || name.isEmpty() || statusLevel == null || statusLevel.isEmpty()) {
-             return null;
+           throw new IllegalArgumentException(" Error in writing somewhere");
+         }
+         boolean existsId = memberRegistry.getMembers().stream().anyMatch(member -> member.getId() == id);
+         if(existsId){
+             throw new IllegalArgumentException("That Id allready exists");
          }
         Member newMember = new Member(id, name.trim(), statusLevel.trim());
-        //addedMember.add(newMember); // Blev ju dubbleter när de sparas dubbel vilket ju inte behövs när
-        //ObservableList uppdaterar UI på studs. Heja heja!!!
-
-        try {
              memberRegistry.saveMember(newMember);
 
         }catch (Exception e) {
-            e.printStackTrace();
-
+            throw new RuntimeException("Failed to save member + e.getMessage");
         }
-        return null;//save to registry Json file.
     }
-
     public void deleteMember(ObservableList<Member> selectedMember, ObservableList<Member> allMembers){
     // In här med nå feta Exceptions
-    selectedMember.forEach(member ->{
-        allMembers.remove(member);
-        memberRegistry.deleteMember(member);
-            });
+    if (selectedMember == null || selectedMember.isEmpty()) {
+        throw new IllegalArgumentException("U have to select a member to delete!");
+        }
+        new ArrayList<>(selectedMember).forEach(deletedMember ->{
+            allMembers.remove(deletedMember);
+            memberRegistry.removeMemberById(deletedMember.getId());//Bara trams att göra en stream för det här.
+        });
     }
     public ObservableList<Member> getMembers(){
         return memberRegistry.getMembers();

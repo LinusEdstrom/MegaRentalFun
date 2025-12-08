@@ -1,6 +1,20 @@
 package com.Edstrom.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+//Lägger in till subtyper så Json fattar
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = RomCom.class, name = "RomCom"),
+        @JsonSubTypes.Type(value = Action.class, name = "Action")
+
+})
 
 public abstract class Item {
 
@@ -13,12 +27,10 @@ public abstract class Item {
 
     public Item(){}
 
-
     public Item(int id, String title, double basePrice) {
         this.id = id;
         this.title = title;
         this.basePrice = basePrice;
-
     }
 
     public int getId() {

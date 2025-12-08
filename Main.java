@@ -32,7 +32,7 @@ import java.util.function.BiConsumer;
 public class Main extends Application {
 
 
-    MemberRegistry memberRegistry = new MemberRegistry();
+    MemberRegistry memberRegistry = MemberRegistry.getInstance();
     MembershipService membershipService = new MembershipService(memberRegistry);
     Inventory inventory = new Inventory();
     RentalService rentalService = new RentalService(inventory);
@@ -392,11 +392,30 @@ public class Main extends Application {
     }
 
     public void deleteButtonClicked() {
-        ObservableList<Member> memberSelected, allMembers;
-        allMembers = memberTable.getItems();
-        memberSelected = memberTable.getSelectionModel().getSelectedItems();
-        memberSelected.forEach(allMembers::remove);
+        ObservableList<Member> selectedMember = memberTable.getSelectionModel().getSelectedItems();
+        ObservableList<Member> allMembers = memberTable.getItems();
+
+        if(selectedMember == null || selectedMember.isEmpty()){
+            showAlert(Alert.AlertType.WARNING, "No member selected", "Select a member to delete first");
+            return;
+        }
+        try {
+            membershipService.deleteMember(selectedMember, allMembers);
+            showAlert(Alert.AlertType.INFORMATION, "Deleted", "Selected member removed from area");
+        }catch (IllegalArgumentException e) {
+            showAlert(Alert.AlertType.WARNING, "Error ", e.getMessage());
+        }catch (Exception e){
+            showAlert(Alert.AlertType.ERROR, "Error", " Failed to delete member " +e.getMessage());
+            e.printStackTrace();
+        }
     }
+        private void showAlert(Alert.AlertType type, String title, String message){
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+        }
     //Helper to safely parse numbers    // Får inte ligga i lamdan i itemAddButton
     private int getInt(TextField numberId){
         String text = numberId.getText();
@@ -461,17 +480,6 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    public ObservableList<Member> getMember() {
-        ObservableList<Member> members = FXCollections.observableArrayList();
-
-        members.add(new Member(1, "FiaStina", "Student"));
-        members.add(new Member(2, "LisaLasse", "Student"));
-        members.add(new Member(3, "GulliGunnar", "Standard"));
-        members.add(new Member(4, "StekarJanne", "Standard"));
-        members.add(new Member(5, "ClaustHauler", "Premium"));
-        return members;
     }
 }
 
