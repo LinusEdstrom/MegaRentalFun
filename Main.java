@@ -9,6 +9,7 @@ import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -40,11 +41,61 @@ public class Main extends Application {
 
     TableView<Member> memberTable;
     TableView<Item> itemTable;
+    TableView<Rental> activeRentalsTable;
     TextField itemIdInput, nameInput, statusLevelInput, idInput, titleInput, basePriceInput;
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle(" Welcome to membershipclub");
+
+        // Lägger in tableView för activeRentals här
+
+        TableColumn<Rental, String> memberColumn;
+        TableColumn<Rental, String> itemColumn;
+        TableColumn<Rental, LocalDate> rentDateColumn;
+        TableColumn<Rental, LocalDate> returnDateColumn;
+
+        // Vill jag köra activeRentalTable som popup, gör new efter heina!
+        // private void showActiveRentalTable () { om jag vill ha en knapp för de typ.
+        activeRentalsTable = new TableView<>();
+
+        memberColumn = new TableColumn<>("Member");
+        itemColumn = new TableColumn<>("Item");
+        rentDateColumn = new TableColumn<>("Rent date");
+        returnDateColumn = new TableColumn<>("Return date");
+
+        //SetcellValueFactory för activeRentals
+        memberColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getMember().getName())
+        );
+        itemColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getItem().getTitle())
+        );
+        rentDateColumn.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getRentingDate())
+        );
+        returnDateColumn.setCellValueFactory(cellData ->
+                new SimpleObjectProperty<>(cellData.getValue().getReturnDate())
+        );
+        activeRentalsTable.getColumns().addAll(memberColumn, itemColumn, rentDateColumn, returnDateColumn);
+
+        activeRentalsTable.setItems(rentalService.getActiveRentals());
+        //Testar röd highlight igen ??? Borde gå med ObjectProperty
+        activeRentalsTable.setRowFactory(goRed ->
+                new TableRow<Rental>() {
+                    @Override
+                    protected void updateItem(Rental rental, boolean empty) {
+                        super.updateItem(rental, empty);
+                        if (rental == null || empty) {
+                            setStyle("");
+                        } else if (rental.getItem().isAvailable()) {
+                            setStyle("-fx-background-color: lightblue;");
+                        } else {
+                            setStyle("-fx-background-color: lightcoral;");
+                        }
+                    }
+                });
+
 
         //itemTable
         itemTable = new TableView();
@@ -61,24 +112,24 @@ public class Main extends Application {
         titleColumn.setMinWidth(200);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         // Testar göra title röd när det är uthyrt
-        titleColumn.setCellFactory(rentedColumn -> new TableCell<Item, String>(){
-        @Override
-        protected void updateItem(String title, boolean empty) {
-            super.updateItem(title, empty);
-            if(empty || title == null) {
-                setText(null);
-                setGraphic(null);
-                setStyle("");
-            }else {
-                setText(title);
-                Item currentItem = getTableView().getItems().get(getIndex());
-                if(!currentItem.isAvailable()){
-                    setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-                }else{
+        titleColumn.setCellFactory(rentedColumn -> new TableCell<Item, String>() {
+            @Override
+            protected void updateItem(String title, boolean empty) {
+                super.updateItem(title, empty);
+                if (empty || title == null) {
+                    setText(null);
+                    setGraphic(null);
                     setStyle("");
+                } else {
+                    setText(title);
+                    Item currentItem = getTableView().getItems().get(getIndex());
+                    if (!currentItem.isAvailable()) {
+                        setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("");
+                    }
                 }
             }
-        }
         });
         //basePrice
         TableColumn<Item, Double> basePriceColumn = new TableColumn<>("Price");
@@ -88,55 +139,55 @@ public class Main extends Application {
         //subColumns
         TableColumn<Item, Integer> lengthColumn = new TableColumn<>("Length minutes");
         lengthColumn.setMinWidth(100);
-        lengthColumn.setCellValueFactory(cellData ->{
+        lengthColumn.setCellValueFactory(cellData -> {
             Item subItem = cellData.getValue();
-            if(subItem instanceof Action) return new ReadOnlyObjectWrapper<>(((Action) subItem).getLength());
-            if(subItem instanceof RomCom) return new ReadOnlyObjectWrapper<>(((RomCom)subItem).getLength());
+            if (subItem instanceof Action) return new ReadOnlyObjectWrapper<>(((Action) subItem).getLength());
+            if (subItem instanceof RomCom) return new ReadOnlyObjectWrapper<>(((RomCom) subItem).getLength());
             return new ReadOnlyObjectWrapper<>(null);
         });
         // Make subColumns editable
-        makeEditableIntColumn(itemTable, lengthColumn, (subItem, value) ->{
-            if(subItem instanceof Action) ((Action)subItem).setLength(value);
-            else if (subItem instanceof RomCom) ((RomCom)subItem).setLength(value);
+        makeEditableIntColumn(itemTable, lengthColumn, (subItem, value) -> {
+            if (subItem instanceof Action) ((Action) subItem).setLength(value);
+            else if (subItem instanceof RomCom) ((RomCom) subItem).setLength(value);
         });
 
         //Action column
         TableColumn<Item, Integer> explosionsColumn = new TableColumn<>("Explosions");
         explosionsColumn.setMinWidth(100);
-        explosionsColumn.setCellValueFactory(cellData ->{
+        explosionsColumn.setCellValueFactory(cellData -> {
             Item subItem = cellData.getValue();
-            return subItem instanceof Action ? new ReadOnlyObjectWrapper<>(((Action)subItem).getExplosions()) : null;
+            return subItem instanceof Action ? new ReadOnlyObjectWrapper<>(((Action) subItem).getExplosions()) : null;
         });
-        makeEditableIntColumn(itemTable, explosionsColumn, (subItem, value) ->{
-            if(subItem instanceof Action)((Action)subItem).setExplosions(value);
+        makeEditableIntColumn(itemTable, explosionsColumn, (subItem, value) -> {
+            if (subItem instanceof Action) ((Action) subItem).setExplosions(value);
         });
         TableColumn<Item, Integer> coolOnelinersColumn = new TableColumn<>("Cool oneliners");
         coolOnelinersColumn.setMinWidth(140);
-        coolOnelinersColumn.setCellValueFactory(cellData ->{
+        coolOnelinersColumn.setCellValueFactory(cellData -> {
             Item subItem = cellData.getValue();
-            return subItem instanceof Action ? new ReadOnlyObjectWrapper<>(((Action)subItem).getCoolOneliners()) : null;
+            return subItem instanceof Action ? new ReadOnlyObjectWrapper<>(((Action) subItem).getCoolOneliners()) : null;
         });
-        makeEditableIntColumn(itemTable, coolOnelinersColumn, (subItem, value) ->{
-            if(subItem instanceof Action) ((Action)subItem).setCoolOneliners(value);
+        makeEditableIntColumn(itemTable, coolOnelinersColumn, (subItem, value) -> {
+            if (subItem instanceof Action) ((Action) subItem).setCoolOneliners(value);
         });
         //RomCom column
         TableColumn<Item, Integer> cheezinessColumn = new TableColumn<>("Cheeziness");
         cheezinessColumn.setMinWidth(100);
-        cheezinessColumn.setCellValueFactory(cellData ->{
+        cheezinessColumn.setCellValueFactory(cellData -> {
             Item subItem = cellData.getValue();
-            return subItem instanceof RomCom ? new ReadOnlyObjectWrapper<>(((RomCom)subItem).getCheeziness()) : null;
+            return subItem instanceof RomCom ? new ReadOnlyObjectWrapper<>(((RomCom) subItem).getCheeziness()) : null;
         });
-        makeEditableIntColumn(itemTable, cheezinessColumn, (subItem, value) ->{
-            if (subItem instanceof RomCom) ((RomCom)subItem).setCheeziness(value);
+        makeEditableIntColumn(itemTable, cheezinessColumn, (subItem, value) -> {
+            if (subItem instanceof RomCom) ((RomCom) subItem).setCheeziness(value);
         });
         TableColumn<Item, Integer> hunksColumn = new TableColumn<>("Hunks");
         hunksColumn.setMinWidth(100);
-        hunksColumn.setCellValueFactory(cellData->{
+        hunksColumn.setCellValueFactory(cellData -> {
             Item subItem = cellData.getValue();
-            return subItem instanceof RomCom ? new ReadOnlyObjectWrapper<>(((RomCom)subItem).getHunks()) : null;
+            return subItem instanceof RomCom ? new ReadOnlyObjectWrapper<>(((RomCom) subItem).getHunks()) : null;
         });
-        makeEditableIntColumn(itemTable, hunksColumn, (subItem, value)->{
-            if(subItem instanceof RomCom) ((RomCom)subItem).setHunks(value);
+        makeEditableIntColumn(itemTable, hunksColumn, (subItem, value) -> {
+            if (subItem instanceof RomCom) ((RomCom) subItem).setHunks(value);
         });
 
 
@@ -178,59 +229,59 @@ public class Main extends Application {
         extra2.setPromptText("Extra2");
         extra3.setPromptText("Extra3");
 
-        subComboBox.setOnAction(subEvent ->{
+        subComboBox.setOnAction(subEvent -> {
             String type = subComboBox.getValue();
-            if("Action".equals(type)){
+            if ("Action".equals(type)) {
                 extra1.setPromptText("Length");
                 extra2.setPromptText("Explosions");
                 extra3.setPromptText("Cool Oneliners");
-            }else if ("RomCom".equals(type)){
+            } else if ("RomCom".equals(type)) {
                 extra1.setPromptText("Length");
                 extra2.setPromptText("Cheeziness");
                 extra3.setPromptText("Hunks");
-            }else {
+            } else {
                 extra1.setPromptText("Extra1");
                 extra2.setPromptText("Extra2");
                 extra3.setPromptText("Extra3");
             }
         });
-            // Add item button //TODO BUTTON SKA NER TILL BUTTONS
+        // Add item button //TODO BUTTON SKA NER TILL BUTTONS
         Button itemAddButton = new Button("Add Item");
         itemAddButton.setOnAction(itemAdder -> {
-                    try {
-                        int id = Integer.parseInt(itemIdInput.getText());
-                        String title = titleInput.getText();
-                        double basePrice = Double.parseDouble(basePriceInput.getText());
-                        String subType = subComboBox.getValue();
+            try {
+                int id = Integer.parseInt(itemIdInput.getText());
+                String title = titleInput.getText();
+                double basePrice = Double.parseDouble(basePriceInput.getText());
+                String subType = subComboBox.getValue();
 
-                        Item newItem = null;    // Först ett tomt item för vi vet inte vilken sub det är än.
-                        if ("Action".equals(subType)) {
-                            int length = getInt(extra1);
-                            int explosions = getInt(extra2);
-                            int coolOneliners = getInt(extra3);
-                            newItem = new Action(id, title, basePrice, length, explosions, coolOneliners);
-                        } else if ("RomCom".equals(subType)) {
-                            int length = getInt(extra1);
-                            int cheeziness = getInt(extra2);
-                            int hunks = getInt(extra3);
-                            newItem = new RomCom(id, title, basePrice, length, cheeziness, hunks);
-                        } else {
-                            throw new IllegalArgumentException("Error with " + subType);
-                        }
-                        rentalService.addItem(newItem);
+                Item newItem = null;    // Först ett tomt item för vi vet inte vilken sub det är än.
+                if ("Action".equals(subType)) {
+                    int length = getInt(extra1);
+                    int explosions = getInt(extra2);
+                    int coolOneliners = getInt(extra3);
+                    newItem = new Action(id, title, basePrice, length, explosions, coolOneliners);
+                } else if ("RomCom".equals(subType)) {
+                    int length = getInt(extra1);
+                    int cheeziness = getInt(extra2);
+                    int hunks = getInt(extra3);
+                    newItem = new RomCom(id, title, basePrice, length, cheeziness, hunks);
+                } else {
+                    throw new IllegalArgumentException("Error with " + subType);
+                }
+                rentalService.addItem(newItem);
 
-                        itemIdInput.clear();
-                        titleInput.clear();
-                        basePriceInput.clear();
-                        extra1.clear();
-                        extra2.clear();
-                        extra3.clear();
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid number format " + e.getMessage());
-                    } catch (Exception e) {
-                        System.out.println("Error adding item " + e.getMessage());
-                    }
-                });
+                itemIdInput.clear();
+                titleInput.clear();
+                basePriceInput.clear();
+                extra1.clear();
+                extra2.clear();
+                extra3.clear();
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number format " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Error adding item " + e.getMessage());
+            }
+        });
 
 
         //TODO MEMBERTABLE
@@ -315,8 +366,12 @@ public class Main extends Application {
         //Buttons
 
         //Rent button
-        Button rentButton = new Button("Rent");
+        Button rentButton = new Button("Rent movie");
         rentButton.setOnAction(rentEvent -> rentButtonClicked());
+
+        //Return button
+        Button returnButton = Button("Return move");
+        rentButton.setOnAction(event -> returnButtonClicked());
 
         //Add member
         Button addButton = new Button("Add member");
@@ -337,7 +392,7 @@ public class Main extends Application {
         itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput, subComboBox, extra1, extra2, extra3, itemAddButton);
 
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(memberTable, memberBox, itemTable, itemBox);
+        vBox.getChildren().addAll(memberTable, memberBox, itemTable, itemBox, activeRentalsTable);
 
         Scene scene = new Scene(vBox);
         primaryStage.setScene(scene);
@@ -349,40 +404,38 @@ public class Main extends Application {
     // TODO METODER, LURIGT FÖR DEN SKA JU HÄMTA BÅDE MEMBER OCH ITEM HMM...
     //Blir så mycket skit här inne alltså, Limpan höga knän för helvete!!!
 
-    public void rentButtonClicked(){
+    public void rentButtonClicked() {
         Member selectedMember = memberTable.getSelectionModel().getSelectedItem();
         Item selectedItem = itemTable.getSelectionModel().getSelectedItem();
-        if(selectedMember == null || selectedItem == null){
-            showAlert(Alert.AlertType.WARNING,"Error", "U have to select booth a member and an item!");
+
+        if (selectedMember == null || selectedItem == null) {
+            showAlert(Alert.AlertType.WARNING, "Error", "U have to select booth a member and an item!");
             return;
         }
-        if(selectedItem instanceof Item && !selectedItem.isAvailable()){
+        Rental rental = rentalService.rentItem(selectedMember, selectedItem);
+
+        if (rental == null) {
             showAlert(Alert.AlertType.WARNING, "Oh no!", "It is allready rented!");
             return;
+        } else {
+            itemTable.refresh();
+            showAlert(Alert.AlertType.INFORMATION, "Rent done!", selectedMember.getName() + selectedItem.getTitle());
         }
-        /* Prevent renting same item twice:
-        boolean alreadyRented = rentals.stream()
-                .anyMatch(r -> r.getItem() != null && r.getItem().getId() == selectedItem.getId());
-        if (alreadyRented) {
-            new Alert(Alert.AlertType.WARNING, "Item already rented in active rentals.").showAndWait();
+    }
+    public void returnButtonClicked(){
+        Rental selectedRental = activeRentalsTable.getSelectionModel().getSelectedItem();
+        if(selectedRental == null){
+            showAlert(Alert.AlertType.ERROR, "ERROR", "Select a movie to return please");
             return;
         }
-
-         */
-        LocalDate rentingDate = LocalDate.now();
-        LocalDate returnDate = null;
-
-        // RentalMirr, member, item, reningdate, returndate
-        Rental rentalMirr = new Rental(selectedMember, selectedItem, rentingDate, returnDate);
-        //Visa på rentals tableView, ska jag ens ha en ??
-        //rentals.add(rentalMirr);
-        //Viktig skicka till member rentalhistory listan
-        selectedMember.getRentalHistory().add(rentalMirr);
-        //Markera som hyrd
-        if(selectedItem instanceof Item) {
-            ((Item) selectedItem).setAvailable(false);
+        boolean returnedRental = rentalService.returnRental(selectedRental);
+        if(returnedRental){
+            activeRentalsTable.getItems().remove(selectedRental);
+            showAlert(Alert.AlertType.INFORMATION, selectedRental.getRentedItem().getTitle() + "returned ",
+                    "by " + selectedRental.getRentingMember().getName());
+        }else {
+            showAlert(Alert.AlertType.ERROR, "Error", "Return failed");
         }
-
     }
 
     public void addButtonClicked() {

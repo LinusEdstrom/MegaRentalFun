@@ -3,9 +3,15 @@ package com.Edstrom.service;
 import com.Edstrom.dataBase.Inventory;
 import com.Edstrom.entity.Item;
 import com.Edstrom.entity.Member;
+import com.Edstrom.entity.Rental;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.time.LocalDate;
+
 public class RentalService {
+
+private ObservableList<Rental> activeRentals = FXCollections.observableArrayList();
 
 private final Inventory inventory;
 
@@ -21,6 +27,39 @@ private final Inventory inventory;
         }
         inventory.addItem(newItem);
         }
+    public Rental rentItem(Member member, Item item) {
+        if(member == null || item == null) {
+            throw new IllegalArgumentException("Member or Item is null");
+        }
+        if(!item.isAvailable()){
+            return null;
+        }
+        LocalDate rentingDate = LocalDate.now();
+        LocalDate returnDate = null;
+
+        Rental rentalMirr = new Rental(member, item, rentingDate, returnDate);
+        member.getRentalHistory().add(rentalMirr);
+        activeRentals.add(rentalMirr);
+
+        item.setAvailable(false);
+
+        return rentalMirr;
+    }
+    public boolean returnRental(Rental returnedRental) {
+        if(returnedRental == null || !activeRentals.contains(returnedRental)) {
+            return false;
+        }
+        if((returnedRental.getItem(!= null) {
+            returnedRental.getItem().setAvailable(true);
+        }
+        activeRentals.remove(returnedRental);
+        return true;
+
+    }
+    public ObservableList<Rental> getActiveRentals() {
+        return activeRentals;
+    }
+
 
     }
 
