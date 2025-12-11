@@ -27,7 +27,7 @@ private final Inventory inventory;
         }
         inventory.addItem(newItem);
         }
-    public Rental rentItem(Member member, Item item) {
+    public Rental rentItem(Member member, Item item, int days) {
         if(member == null || item == null) {
             throw new IllegalArgumentException("Member or Item is null");
         }
@@ -35,9 +35,8 @@ private final Inventory inventory;
             return null;
         }
         LocalDate rentingDate = LocalDate.now();
-        LocalDate returnDate = null;
 
-        Rental rentalMirr = new Rental(member, item, rentingDate, returnDate);
+        Rental rentalMirr = new Rental(member, item, rentingDate, days);
         member.getRentalHistory().add(rentalMirr);
         activeRentals.add(rentalMirr);
 
@@ -49,8 +48,9 @@ private final Inventory inventory;
         if(returnedRental == null || !activeRentals.contains(returnedRental)) {
             return false;
         }
-        if((returnedRental.getItem(!= null) {
-            returnedRental.getItem().setAvailable(true);
+        Item returnedItem = returnedRental.getItem();
+        if (returnedItem != null) {
+            returnedItem.setAvailable(true);
         }
         activeRentals.remove(returnedRental);
         return true;

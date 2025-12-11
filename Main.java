@@ -28,6 +28,7 @@ import javafx.util.converter.IntegerStringConverter;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class Main extends Application {
@@ -370,8 +371,8 @@ public class Main extends Application {
         rentButton.setOnAction(rentEvent -> rentButtonClicked());
 
         //Return button
-        Button returnButton = Button("Return move");
-        rentButton.setOnAction(event -> returnButtonClicked());
+        Button returnButton = new Button("Return move");
+        returnButton.setOnAction(event -> returnButtonClicked());
 
         //Add member
         Button addButton = new Button("Add member");
@@ -384,12 +385,14 @@ public class Main extends Application {
         HBox memberBox = new HBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
-        memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton, rentButton);
+        memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton,
+                rentButton, returnButton);
 
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
         itemBox.setSpacing(10);
-        itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput, subComboBox, extra1, extra2, extra3, itemAddButton);
+        itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput,
+                subComboBox, extra1, extra2, extra3, itemAddButton);
 
         VBox vBox = new VBox();
         vBox.getChildren().addAll(memberTable, memberBox, itemTable, itemBox, activeRentalsTable);
@@ -405,6 +408,7 @@ public class Main extends Application {
     //Blir så mycket skit här inne alltså, Limpan höga knän för helvete!!!
 
     public void rentButtonClicked() {
+        System.out.println("rentButtonClicked() called");
         Member selectedMember = memberTable.getSelectionModel().getSelectedItem();
         Item selectedItem = itemTable.getSelectionModel().getSelectedItem();
 
@@ -412,17 +416,43 @@ public class Main extends Application {
             showAlert(Alert.AlertType.WARNING, "Error", "U have to select booth a member and an item!");
             return;
         }
-        Rental rental = rentalService.rentItem(selectedMember, selectedItem);
+        //TODO Gör en liten ruta för att välja antal dagar
+        TextInputDialog daysToRent = new TextInputDialog("1");
+        daysToRent.setTitle("Number of days");
+        daysToRent.setHeaderText(null);
+        daysToRent.setContentText("Days:");
+
+        Optional<String> stringDays = daysToRent.showAndWait();
+        if(!stringDays.isPresent()) {
+            showAlert(Alert.AlertType.INFORMATION, "Interrupted", "Member canceled the rent");
+        }
+        int days;
+        try {
+            days = Integer.parseInt(stringDays.get());
+            if (days <= 0) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Number has to be posivite");
+                return;
+            }
+            if (days > 7) {
+                showAlert(Alert.AlertType.INFORMATION, "Sorry!", "Max renting time is seven days");
+            }
+        }catch(NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Enter a valid number please");
+            return;
+        }
+        Rental rental = rentalService.rentItem(selectedMember, selectedItem, days);
 
         if (rental == null) {
             showAlert(Alert.AlertType.WARNING, "Oh no!", "It is allready rented!");
             return;
         } else {
             itemTable.refresh();
-            showAlert(Alert.AlertType.INFORMATION, "Rent done!", selectedMember.getName() + selectedItem.getTitle());
+            showAlert(Alert.AlertType.INFORMATION, "Rent done!", selectedMember.getName() + " rented " +
+                    selectedItem.getTitle() + " for " + days + " days!\n To pay " + String.format("%.2f", rental.getTotalPrice()));
         }
     }
     public void returnButtonClicked(){
+        System.out.println("returnButtonClicked() called");
         Rental selectedRental = activeRentalsTable.getSelectionModel().getSelectedItem();
         if(selectedRental == null){
             showAlert(Alert.AlertType.ERROR, "ERROR", "Select a movie to return please");
@@ -431,14 +461,14 @@ public class Main extends Application {
         boolean returnedRental = rentalService.returnRental(selectedRental);
         if(returnedRental){
             activeRentalsTable.getItems().remove(selectedRental);
-            showAlert(Alert.AlertType.INFORMATION, selectedRental.getRentedItem().getTitle() + "returned ",
-                    "by " + selectedRental.getRentingMember().getName());
+            showAlert(Alert.AlertType.INFORMATION, "Return done!", selectedRental.getItem().getTitle() + " returned by " + selectedRental.getMember().getName());
         }else {
             showAlert(Alert.AlertType.ERROR, "Error", "Return failed");
         }
     }
 
     public void addButtonClicked() {
+        System.out.println("returnButtonClicked() called");
         membershipService.addMember(
                 Integer.parseInt(idInput.getText()),  // Här ska det in nå fina Exceptions osså
                 nameInput.getText(),

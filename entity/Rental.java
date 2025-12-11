@@ -13,13 +13,17 @@ public class Rental {
     private final ObjectProperty<Item> rentedItem = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> rentingDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> returnDate = new SimpleObjectProperty<>();
+    private final int days;
+    private final double totalPrice;
 
     //Bygg Rentalen
-    public Rental(Member rentingMember, Item rentedItem, LocalDate rentingDate, LocalDate returnDate) {
+    public Rental(Member rentingMember, Item rentedItem, LocalDate rentingDate, int days) {
         this.rentingMember.set(rentingMember);
         this.rentedItem.set(rentedItem);
         this.rentingDate.set(rentingDate);
-        this.returnDate.set(returnDate);
+        this.days = days;
+        this.returnDate.set(rentingDate.plusDays(days));
+        this.totalPrice = rentedItem.getBasePrice() * days;
     }
     //Get and Set
     //Member
@@ -34,10 +38,15 @@ public class Rental {
     public LocalDate getRentingDate(){return rentingDate.get();}
     public ObjectProperty<LocalDate> rentingDateProperty(){return rentingDate;}
     public void setRentingDate(LocalDate startDate){rentingDate.set(startDate);}
+    //this.returnDate.set(startDate.plusDays(days)); //Behövs ju bara om days ska gå ändra
+    //days
+    public int getDays(){return days;}
     //ReturnDate
     public LocalDate getReturnDate(){return returnDate.get();}
     public ObjectProperty<LocalDate> returnDateProperty(){return returnDate;}
     public void setReturnDate(LocalDate stopDate){returnDate.set(stopDate);}
+    //TotalPrice
+    public double getTotalPrice(){return totalPrice;}
 
 
 }
