@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public class Main extends Application {
 
@@ -382,11 +383,19 @@ public class Main extends Application {
         Button deleteButton = new Button("Remove member");
         deleteButton.setOnAction(event -> deleteButtonClicked());
 
+        //historyButton
+        Button historyButton = new Button("See members rental history");
+        historyButton.setOnAction(event -> historyButtonClicked());
+
+        //TotalRevenueButton
+        Button totalRevenueButton = new Button("See total revenue");
+        totalRevenueButton.setOnAction(even -> totalRevenueButtonClicked());
+
         HBox memberBox = new HBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
         memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton,
-                rentButton, returnButton);
+                rentButton, returnButton, historyButton, totalRevenueButton);
 
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
@@ -423,8 +432,9 @@ public class Main extends Application {
         daysToRent.setContentText("Days:");
 
         Optional<String> stringDays = daysToRent.showAndWait();
-        if(!stringDays.isPresent()) {
+        if (!stringDays.isPresent()) {
             showAlert(Alert.AlertType.INFORMATION, "Interrupted", "Member canceled the rent");
+            return;
         }
         int days;
         try {
@@ -436,7 +446,7 @@ public class Main extends Application {
             if (days > 7) {
                 showAlert(Alert.AlertType.INFORMATION, "Sorry!", "Max renting time is seven days");
             }
-        }catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Enter a valid number please");
             return;
         }
@@ -446,23 +456,27 @@ public class Main extends Application {
             showAlert(Alert.AlertType.WARNING, "Oh no!", "It is allready rented!");
             return;
         } else {
+            itemTable.getItems().remove(selectedItem);  // Ta bort det från tableView när de är uthyrt
             itemTable.refresh();
             showAlert(Alert.AlertType.INFORMATION, "Rent done!", selectedMember.getName() + " rented " +
                     selectedItem.getTitle() + " for " + days + " days!\n To pay " + String.format("%.2f", rental.getTotalPrice()));
         }
     }
-    public void returnButtonClicked(){
+
+    public void returnButtonClicked() {
         System.out.println("returnButtonClicked() called");
         Rental selectedRental = activeRentalsTable.getSelectionModel().getSelectedItem();
-        if(selectedRental == null){
+        if (selectedRental == null) {
             showAlert(Alert.AlertType.ERROR, "ERROR", "Select a movie to return please");
             return;
         }
         boolean returnedRental = rentalService.returnRental(selectedRental);
-        if(returnedRental){
+        if (returnedRental) {
             activeRentalsTable.getItems().remove(selectedRental);
+            itemTable.getItems().add(selectedRental.getItem());         //Få tebax det i itemTable listan igen
+            itemTable.refresh();
             showAlert(Alert.AlertType.INFORMATION, "Return done!", selectedRental.getItem().getTitle() + " returned by " + selectedRental.getMember().getName());
-        }else {
+        } else {
             showAlert(Alert.AlertType.ERROR, "Error", "Return failed");
         }
     }
@@ -482,27 +496,61 @@ public class Main extends Application {
         ObservableList<Member> selectedMember = memberTable.getSelectionModel().getSelectedItems();
         ObservableList<Member> allMembers = memberTable.getItems();
 
-        if(selectedMember == null || selectedMember.isEmpty()){
+        if (selectedMember == null || selectedMember.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "No member selected", "Select a member to delete first");
             return;
         }
         try {
             membershipService.deleteMember(selectedMember, allMembers);
             showAlert(Alert.AlertType.INFORMATION, "Deleted", "Selected member removed from area");
-        }catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             showAlert(Alert.AlertType.WARNING, "Error ", e.getMessage());
-        }catch (Exception e){
-            showAlert(Alert.AlertType.ERROR, "Error", " Failed to delete member " +e.getMessage());
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", " Failed to delete member " + e.getMessage());
             e.printStackTrace();
         }
     }
-        private void showAlert(Alert.AlertType type, String title, String message){
+
+    public void historyButtonClicked() {
+        Member selectedMember = memberTable.getSelectionModel().getSelectedItem();
+        if (selectedMember == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No member selected");
+            return;
+        }
+
+        ObservableList<Rental> history = selectedMember.getRentalHistory();
+        if (history == null || history.isEmpty()) {
+            showAlert(Alert.AlertType.INFORMATION, "No rentalhistory", "this member hasn't been active yet");
+            return;
+        }
+        String historyString = history.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining("\n"));
+
+        TextArea memberHistory = new TextArea(historyString);
+        memberHistory.setEditable(false);
+        memberHistory.setWrapText(true);
+
+        Alert historyAlert = new Alert(Alert.AlertType.INFORMATION);
+        historyAlert.setTitle("Rental history");
+        historyAlert.setHeaderText(selectedMember.getName() + " rental history");
+        historyAlert.getDialogPane().setContent(memberHistory);
+        historyAlert.showAndWait();
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-        }
+    }
+
+    public void totalRevenueButtonClicked() {
+    double totalRevenue = rentalService.getTotalRevenue(memberTable.getItems());
+    showAlert(Alert.AlertType.INFORMATION, "Total revenue", String.format("%.2f ", totalRevenue));
+    }
+
     //Helper to safely parse numbers    // Får inte ligga i lamdan i itemAddButton
     private int getInt(TextField numberId){
         String text = numberId.getText();

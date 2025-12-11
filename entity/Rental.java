@@ -4,6 +4,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.time.LocalDate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Rental {
 
@@ -14,16 +16,16 @@ public class Rental {
     private final ObjectProperty<LocalDate> rentingDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> returnDate = new SimpleObjectProperty<>();
     private final int days;
-    private final double totalPrice;
+    private double totalPrice;
 
     //Bygg Rentalen
-    public Rental(Member rentingMember, Item rentedItem, LocalDate rentingDate, int days) {
+    public Rental(Member rentingMember, Item rentedItem, LocalDate rentingDate, int days, double totalPrice) {
         this.rentingMember.set(rentingMember);
         this.rentedItem.set(rentedItem);
         this.rentingDate.set(rentingDate);
         this.days = days;
         this.returnDate.set(rentingDate.plusDays(days));
-        this.totalPrice = rentedItem.getBasePrice() * days;
+        this.totalPrice = totalPrice;
     }
     //Get and Set
     //Member
@@ -48,5 +50,14 @@ public class Rental {
     //TotalPrice
     public double getTotalPrice(){return totalPrice;}
 
+    @Override
+    public String toString() {
+        return Stream.of(
+                "Rented: " + getItem().getTitle(),
+                "from " + getRentingDate(),
+                "to " + getReturnDate(),
+                "total price " + getTotalPrice()
+        ).collect(Collectors.joining(" || "));
+    }
 
 }
