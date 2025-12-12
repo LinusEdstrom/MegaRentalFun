@@ -6,7 +6,6 @@ import com.Edstrom.entity.*;
 import com.Edstrom.service.MembershipService;
 import com.Edstrom.service.RentalService;
 import javafx.application.Application;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -18,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -391,7 +391,7 @@ public class Main extends Application {
         Button totalRevenueButton = new Button("See total revenue");
         totalRevenueButton.setOnAction(even -> totalRevenueButtonClicked());
 
-        HBox memberBox = new HBox();
+        VBox memberBox = new VBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
         memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton,
@@ -403,18 +403,33 @@ public class Main extends Application {
         itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput,
                 subComboBox, extra1, extra2, extra3, itemAddButton);
 
-        VBox vBox = new VBox();
-        vBox.getChildren().addAll(memberTable, memberBox, itemTable, itemBox, activeRentalsTable);
+        activeRentalsTable.setPadding(new Insets(10, 10, 10, 10));
+        
 
-        Scene scene = new Scene(vBox);
+        VBox itemVbox = new VBox();
+        itemVbox.setPadding(new Insets(10));
+        itemVbox.setSpacing(10);
+        itemVbox.setSpacing(10);
+        itemVbox.getChildren().addAll(itemTable, itemBox);
+        
+        BorderPane borderPane = new BorderPane();
+
+        //borderPane.getChildren().addAll(memberTable, memberBox, itemTable, activeRentalsTable);
+        borderPane.setCenter(memberTable);
+        borderPane.setRight(memberBox);
+        borderPane.setBottom(activeRentalsTable);
+        borderPane.setLeft(itemVbox);
+        
+
+
+
+        Scene scene = new Scene(borderPane);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
 
 
     }
-
-    // TODO METODER, LURIGT FÖR DEN SKA JU HÄMTA BÅDE MEMBER OCH ITEM HMM...
-    //Blir så mycket skit här inne alltså, Limpan höga knän för helvete!!!
 
     public void rentButtonClicked() {
         System.out.println("rentButtonClicked() called");
