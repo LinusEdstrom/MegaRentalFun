@@ -6,12 +6,14 @@ import com.Edstrom.entity.*;
 import com.Edstrom.service.MembershipService;
 import com.Edstrom.service.RentalService;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
@@ -48,7 +50,6 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle(" Welcome to membershipclub");
 
         // Lägger in tableView för activeRentals här
 
@@ -57,14 +58,18 @@ public class Main extends Application {
         TableColumn<Rental, LocalDate> rentDateColumn;
         TableColumn<Rental, LocalDate> returnDateColumn;
 
-        // Vill jag köra activeRentalTable som popup, gör new efter heina!
-        // private void showActiveRentalTable () { om jag vill ha en knapp för de typ.
         activeRentalsTable = new TableView<>();
+        activeRentalsTable.setId("activeRentalsTable");
 
         memberColumn = new TableColumn<>("Member");
         itemColumn = new TableColumn<>("Item");
         rentDateColumn = new TableColumn<>("Rent date");
         returnDateColumn = new TableColumn<>("Return date");
+
+        //Fixar lite minWidth
+        memberColumn.setMinWidth(150);
+        itemColumn.setMinWidth(200);
+
 
         //SetcellValueFactory för activeRentals
         memberColumn.setCellValueFactory(cellData ->
@@ -82,22 +87,6 @@ public class Main extends Application {
         activeRentalsTable.getColumns().addAll(memberColumn, itemColumn, rentDateColumn, returnDateColumn);
 
         activeRentalsTable.setItems(rentalService.getActiveRentals());
-        //Testar röd highlight igen ??? Borde gå med ObjectProperty
-        activeRentalsTable.setRowFactory(goRed ->
-                new TableRow<Rental>() {
-                    @Override
-                    protected void updateItem(Rental rental, boolean empty) {
-                        super.updateItem(rental, empty);
-                        if (rental == null || empty) {
-                            setStyle("");
-                        } else if (rental.getItem().isAvailable()) {
-                            setStyle("-fx-background-color: lightblue;");
-                        } else {
-                            setStyle("-fx-background-color: lightcoral;");
-                        }
-                    }
-                });
-
 
         //itemTable
         itemTable = new TableView();
@@ -391,11 +380,24 @@ public class Main extends Application {
         Button totalRevenueButton = new Button("See total revenue");
         totalRevenueButton.setOnAction(even -> totalRevenueButtonClicked());
 
+        //ExitButton
+        Button exitButton = new Button("Exit");
+        exitButton.setOnAction(exit -> {
+           Alert exitAlert = new Alert(Alert.AlertType.CONFIRMATION, "You sure u want to exit Wigells Retro Rentals ?",
+            ButtonType.YES, ButtonType.CANCEL);
+            exitAlert.setTitle("Exit");
+            exitAlert.setHeaderText(null);
+
+            exitAlert.showAndWait()
+                    .filter(ButtonType.YES::equals)
+                    .ifPresent(yes -> Platform.exit());
+        });
+
         VBox memberBox = new VBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
         memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton,
-                rentButton, returnButton, historyButton, totalRevenueButton);
+                rentButton, returnButton, historyButton);
 
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
@@ -403,22 +405,31 @@ public class Main extends Application {
         itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput,
                 subComboBox, extra1, extra2, extra3, itemAddButton);
 
-        activeRentalsTable.setPadding(new Insets(10, 10, 10, 10));
-        
-
         VBox itemVbox = new VBox();
         itemVbox.setPadding(new Insets(10));
         itemVbox.setSpacing(10);
         itemVbox.setSpacing(10);
         itemVbox.getChildren().addAll(itemTable, itemBox);
-        
-        BorderPane borderPane = new BorderPane();
 
-        //borderPane.getChildren().addAll(memberTable, memberBox, itemTable, activeRentalsTable);
+        VBox exitBox = new VBox();
+        exitBox.getChildren().addAll(totalRevenueButton, exitButton);
+
+        HBox rentedHbox = new HBox();
+        rentedHbox.setPadding(new Insets(10));
+        rentedHbox.getChildren().addAll(activeRentalsTable, exitBox);
+
+        Label welcome = new Label("Welcome to Wigells Retro Rentals!");
+        welcome.setMaxWidth(Double.MAX_VALUE);
+        welcome.setAlignment(Pos.CENTER);
+        welcome.setId("topLabel");
+
+        BorderPane borderPane = new BorderPane();
+        borderPane.setTop(welcome);
+        borderPane.setLeft(itemVbox);
         borderPane.setCenter(memberTable);
         borderPane.setRight(memberBox);
-        borderPane.setBottom(activeRentalsTable);
-        borderPane.setLeft(itemVbox);
+        borderPane.setBottom(rentedHbox);
+
         
 
 
