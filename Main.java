@@ -23,6 +23,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 import javafx.util.converter.DoubleStringConverter;
@@ -51,6 +52,8 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
 
+        primaryStage.initStyle(StageStyle.UNDECORATED);
+
         // Lägger in tableView för activeRentals här
 
         TableColumn<Rental, String> memberColumn;
@@ -60,6 +63,7 @@ public class Main extends Application {
 
         activeRentalsTable = new TableView<>();
         activeRentalsTable.setId("activeRentalsTable");
+        activeRentalsTable.setMaxHeight(300);
 
         memberColumn = new TableColumn<>("Member");
         itemColumn = new TableColumn<>("Item");
@@ -358,6 +362,7 @@ public class Main extends Application {
 
         //Rent button
         Button rentButton = new Button("Rent movie");
+        rentButton.setId("rentButton");
         rentButton.setOnAction(rentEvent -> rentButtonClicked());
 
         //Return button
@@ -382,6 +387,7 @@ public class Main extends Application {
 
         //ExitButton
         Button exitButton = new Button("Exit");
+        exitButton.setId("exitButton");
         exitButton.setOnAction(exit -> {
            Alert exitAlert = new Alert(Alert.AlertType.CONFIRMATION, "You sure u want to exit Wigells Retro Rentals ?",
             ButtonType.YES, ButtonType.CANCEL);
@@ -396,8 +402,8 @@ public class Main extends Application {
         VBox memberBox = new VBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
-        memberBox.getChildren().addAll(idInput, nameInput, statusLevelInput, addButton, deleteButton,
-                rentButton, returnButton, historyButton);
+        memberBox.getChildren().addAll(rentButton, idInput, nameInput, statusLevelInput, addButton, deleteButton,
+                 returnButton, historyButton);
 
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
@@ -405,18 +411,42 @@ public class Main extends Application {
         itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput,
                 subComboBox, extra1, extra2, extra3, itemAddButton);
 
+        Label movieLabel = new Label("Rentable movies");
+        movieLabel.setId("movieLabel");
+        movieLabel.setMaxWidth(Double.MAX_VALUE);
+        movieLabel.setAlignment(Pos.CENTER);
+
+        Label memberLabel = new Label("Members");
+        memberLabel.setId("memberLabel");
+        memberLabel.setMaxWidth(Double.MAX_VALUE);
+        memberLabel.setAlignment(Pos.CENTER);
+
+        Label activeRentalsLabel = new Label("Allready rented movies");
+        activeRentalsLabel.setId("activeRentalsLabel");
+        activeRentalsLabel.setMaxWidth(Double.MAX_VALUE);
+        activeRentalsLabel.setAlignment(Pos.CENTER);
+
         VBox itemVbox = new VBox();
         itemVbox.setPadding(new Insets(10));
         itemVbox.setSpacing(10);
-        itemVbox.setSpacing(10);
-        itemVbox.getChildren().addAll(itemTable, itemBox);
+        itemVbox.getChildren().addAll(movieLabel, itemTable, itemBox);
+
+        VBox memberTableVbox = new VBox();
+        memberTableVbox.setPadding(new Insets (10));
+        memberTableVbox.setSpacing(10);
+        memberTableVbox.getChildren().addAll(memberLabel, memberTable);
+
+        VBox activeRentalsVbox = new VBox();
+        activeRentalsVbox.setPadding(new Insets(10));
+        activeRentalsVbox.setSpacing(10);
+        activeRentalsVbox.getChildren().addAll(activeRentalsLabel, activeRentalsTable);
 
         VBox exitBox = new VBox();
         exitBox.getChildren().addAll(totalRevenueButton, exitButton);
 
         HBox rentedHbox = new HBox();
         rentedHbox.setPadding(new Insets(10));
-        rentedHbox.getChildren().addAll(activeRentalsTable, exitBox);
+        rentedHbox.getChildren().addAll(activeRentalsVbox, exitBox);
 
         Label welcome = new Label("Welcome to Wigells Retro Rentals!");
         welcome.setMaxWidth(Double.MAX_VALUE);
@@ -424,10 +454,11 @@ public class Main extends Application {
         welcome.setId("topLabel");
 
         BorderPane borderPane = new BorderPane();
+        borderPane.setId("borderPane");
         borderPane.setTop(welcome);
         borderPane.setLeft(itemVbox);
-        borderPane.setCenter(memberTable);
-        borderPane.setRight(memberBox);
+        borderPane.setCenter(memberBox);
+        borderPane.setRight(memberTableVbox);
         borderPane.setBottom(rentedHbox);
 
         
@@ -439,7 +470,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-
+        System.out.println("TableView height: " + activeRentalsTable.getHeight());
     }
 
     public void rentButtonClicked() {
