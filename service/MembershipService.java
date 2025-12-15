@@ -2,10 +2,15 @@ package com.Edstrom.service;
 
 import com.Edstrom.dataBase.MemberRegistry;
 import com.Edstrom.entity.Member;
+import com.Edstrom.entity.StatusLevel;
+import com.Edstrom.exceptions.AlreadyExistsException;
+import com.Edstrom.exceptions.InvalidMemberDataException;
+import com.Edstrom.exceptions.MissingStatusException;
+import com.Edstrom.exceptions.NumberOverZeroException;
 import javafx.collections.ObservableList;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MembershipService {
 
@@ -15,24 +20,31 @@ public class MembershipService {
         this.memberRegistry = memberRegistry;
     }
 
-    public void addMember(int id, String name, String statusLevel) {
+    public void addMember(int id, String name, StatusLevel statusLevel) {
 
-        try{
-            // Här ska det in fett med Exception try catch stuff
-         if(name == null || name.isEmpty() || statusLevel == null || statusLevel.isEmpty()) {
-           throw new IllegalArgumentException(" Error in writing somewhere");
-         }
-         boolean existsId = memberRegistry.getMembers().stream().anyMatch(member -> member.getId() == id);
-         if(existsId){
-             throw new IllegalArgumentException("That Id allready exists");
-         }
-        Member newMember = new Member(id, name.trim(), statusLevel.trim());
-             memberRegistry.saveMember(newMember);
-
-        }catch (Exception e) {
-            throw new RuntimeException("Failed to save member + e.getMessage");
+        if (id <= 0) {
+            throw new NumberOverZeroException("number must be more then 0");
+        }
+        if (name == null || name.isEmpty()) {
+            throw new InvalidMemberDataException(" Error in writing somewhere");
+        }
+        boolean existsId = memberRegistry.getMembers()
+                .stream()
+                .anyMatch(member -> member.getId() == id);
+        if (existsId) {
+            throw new AlreadyExistsException("That Id allready exists"); //alReadyExistsException
+        }
+        if (statusLevel == null) {
+            throw new MissingStatusException("Please choose a status");
+        }
+        try {
+            Member newMember = new Member(id, name.trim(), statusLevel);
+            memberRegistry.saveMember(newMember);
+        } catch (IOException e) {
+            throw new RuntimeException("Error, member not saved" + e);  //IOExceptions should never show in UI
         }
     }
+
     public void deleteMember(ObservableList<Member> selectedMember, ObservableList<Member> allMembers){
     // In här med nå feta Exceptions
     if (selectedMember == null || selectedMember.isEmpty()) {

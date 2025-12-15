@@ -1,9 +1,11 @@
 package com.Edstrom.service;
 
 import com.Edstrom.dataBase.Inventory;
-import com.Edstrom.entity.Item;
-import com.Edstrom.entity.Member;
-import com.Edstrom.entity.Rental;
+import com.Edstrom.entity.*;
+import com.Edstrom.exceptions.AlreadyExistsException;
+import com.Edstrom.exceptions.InvalidItemDataException;
+import com.Edstrom.exceptions.MissingSubTypeException;
+import com.Edstrom.exceptions.NumberOverZeroException;
 import com.Edstrom.pricing.Premium;
 import com.Edstrom.pricing.PricePolicy;
 import com.Edstrom.pricing.Standard;
@@ -16,28 +18,54 @@ import java.util.List;
 
 public class RentalService {
 
-private ObservableList<Rental> activeRentals = FXCollections.observableArrayList();
+    private ObservableList<Rental> activeRentals = FXCollections.observableArrayList();
 
-private final Inventory inventory;
+    private final Inventory inventory;
 
     public RentalService(Inventory inventory) {
         this.inventory = inventory;
     }
 
-    public ObservableList<Item> getItems() {return inventory.getItems();
+    public ObservableList<Item> getItems() {
+        return inventory.getItems();
     }
-    public void addItem(Item newItem) {
-        if (newItem == null){
-            throw new IllegalArgumentException("Where is the item ?");
-        }
-        inventory.addItem(newItem);
-        }
-        private PricePolicy getPolicy(Member rentMember){
-        switch (rentMember.getStatusLevel().toLowerCase()){
 
-            case "premium":
+    public void addItem(int id, String title, double basePrice, String subType,
+                        int valueExtra1, int valueExtra2, int valueExtra3) {
+
+        boolean exists = inventory.getItems().stream().anyMatch(item -> item.getId() == id);
+        if (exists) {
+            throw new AlreadyExistsException("Item with ID " + id + " already exists");
+        }
+        if (title == null || title.isEmpty()) {
+            throw new InvalidItemDataException("All fields must be filled correctly");
+        }
+        if (subType == null) {
+            throw new MissingSubTypeException("Please choose what kind of movie it is");
+        }
+        if (id <= 0 || basePrice <= 0 || valueExtra1 <= 0 || valueExtra2 < 0 || valueExtra3 < 0) {
+            throw new NumberOverZeroException("Numeric fields has to be positive");
+        }
+        Item newItem;
+        switch (subType) {
+            case "Action":
+                newItem = new Action(id, title, basePrice, valueExtra1, valueExtra2, valueExtra3);
+                break;
+            case "RomCom":
+                newItem = new RomCom(id, title, basePrice, valueExtra1, valueExtra2, valueExtra3);
+                break;
+            default:
+                throw new InvalidItemDataException(" This is not a valid type " + subType);
+        }
+        inventory.getItems().add(newItem);
+    }
+
+        private PricePolicy getPolicy(Member rentMember){
+        switch (rentMember.getStatusLevel()){
+
+            case PREMIUM:
                 return new Premium();
-            case "student":
+            case STUDENT:
                 return new Student();
             default:
                 return new Standard();

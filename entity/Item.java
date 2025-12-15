@@ -57,7 +57,6 @@ public abstract class Item {
 
     public void setAvailable(boolean available){this.available = available;}
 
-    //public abstract double getPricePerDay();    //En override som gick till Dvd, för att få return basePrice
 }
 
 

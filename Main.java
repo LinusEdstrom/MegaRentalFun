@@ -3,6 +3,7 @@ package com.Edstrom;
 import com.Edstrom.dataBase.Inventory;
 import com.Edstrom.dataBase.MemberRegistry;
 import com.Edstrom.entity.*;
+import com.Edstrom.exceptions.*;
 import com.Edstrom.service.MembershipService;
 import com.Edstrom.service.RentalService;
 import javafx.application.Application;
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main extends Application {
 
@@ -48,6 +50,7 @@ public class Main extends Application {
     TableView<Item> itemTable;
     TableView<Rental> activeRentalsTable;
     TextField itemIdInput, nameInput, statusLevelInput, idInput, titleInput, basePriceInput;
+    ComboBox<StatusLevel>statusLevelBox;
 
     @Override
     public void start(Stage primaryStage) {
@@ -106,26 +109,7 @@ public class Main extends Application {
         TableColumn<Item, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setMinWidth(200);
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        // Testar göra title röd när det är uthyrt
-        titleColumn.setCellFactory(rentedColumn -> new TableCell<Item, String>() {
-            @Override
-            protected void updateItem(String title, boolean empty) {
-                super.updateItem(title, empty);
-                if (empty || title == null) {
-                    setText(null);
-                    setGraphic(null);
-                    setStyle("");
-                } else {
-                    setText(title);
-                    Item currentItem = getTableView().getItems().get(getIndex());
-                    if (!currentItem.isAvailable()) {
-                        setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-                    } else {
-                        setStyle("");
-                    }
-                }
-            }
-        });
+
         //basePrice
         TableColumn<Item, Double> basePriceColumn = new TableColumn<>("Price");
         basePriceColumn.setMinWidth(150);
@@ -198,13 +182,14 @@ public class Main extends Application {
 
         //MemberTable
         memberTable = new TableView();
-        memberTable.setEditable(true);      //För att ändra namn på en person ??
+        memberTable.setEditable(true);
+        memberTable.getSelectionModel().setCellSelectionEnabled(true);//för att välja i combobox
 
         //Inputs textfields
         //Id
         itemIdInput = new TextField();
         itemIdInput.setPromptText("ID");
-        itemIdInput.setMinWidth(80);     //Behövs bara i första så följer resten bredden.
+        itemIdInput.setMinWidth(80);
         //Title
         titleInput = new TextField();
         titleInput.setPromptText("Title");
@@ -240,45 +225,41 @@ public class Main extends Application {
                 extra3.setPromptText("Extra3");
             }
         });
-        // Add item button //TODO BUTTON SKA NER TILL BUTTONS
+        // itemAddButton
         Button itemAddButton = new Button("Add Item");
         itemAddButton.setOnAction(itemAdder -> {
-            try {
-                int id = Integer.parseInt(itemIdInput.getText());
-                String title = titleInput.getText();
-                double basePrice = Double.parseDouble(basePriceInput.getText());
-                String subType = subComboBox.getValue();
+                    try {
+                        int id = Integer.parseInt(itemIdInput.getText().trim());
+                        String title = titleInput.getText().trim();
+                        double basePrice = Double.parseDouble(basePriceInput.getText().trim());
+                        String subType = subComboBox.getValue();
 
-                Item newItem = null;    // Först ett tomt item för vi vet inte vilken sub det är än.
-                if ("Action".equals(subType)) {
-                    int length = getInt(extra1);
-                    int explosions = getInt(extra2);
-                    int coolOneliners = getInt(extra3);
-                    newItem = new Action(id, title, basePrice, length, explosions, coolOneliners);
-                } else if ("RomCom".equals(subType)) {
-                    int length = getInt(extra1);
-                    int cheeziness = getInt(extra2);
-                    int hunks = getInt(extra3);
-                    newItem = new RomCom(id, title, basePrice, length, cheeziness, hunks);
-                } else {
-                    throw new IllegalArgumentException("Error with " + subType);
-                }
-                rentalService.addItem(newItem);
+                        int valueExtra1 = getInt(extra1);
+                        int valueExtra2 = getInt(extra2);
+                        int valueExtra3 = getInt(extra3);
 
-                itemIdInput.clear();
-                titleInput.clear();
-                basePriceInput.clear();
-                extra1.clear();
-                extra2.clear();
-                extra3.clear();
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number format " + e.getMessage());
-            } catch (Exception e) {
-                System.out.println("Error adding item " + e.getMessage());
-            }
-        });
+                        rentalService.addItem(id, title, basePrice, subType, valueExtra1, valueExtra2, valueExtra3);
 
+                        Stream.of(itemIdInput, titleInput, basePriceInput, extra1, extra2, extra3)
+                                .forEach(TextInputControl::clear);
+                        subComboBox.getSelectionModel().clearSelection();
+                        showAlert(Alert.AlertType.INFORMATION, "Item added", "succesfully to your inventory");
 
+                    } catch (NumberFormatException e) {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Numeric fields must be numbers");
+                    } catch (AlreadyExistsException e) {
+                        showAlert(Alert.AlertType.ERROR, "Error ID", "that item ID already exists");
+                    } catch (InvalidItemDataException e) {
+                        showAlert(Alert.AlertType.ERROR, "Error", "please fill everything correct");
+                    } catch (NumberOverZeroException e) {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Number values have to be positive");
+                    }catch (MissingSubTypeException e) {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Please choose what kind of movie it is");
+                    } catch (Exception e) {
+                        showAlert(Alert.AlertType.ERROR, "Unexpected error", e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
         //TODO MEMBERTABLE
         //columns
         //Id
@@ -309,35 +290,20 @@ public class Main extends Application {
         });
         nameColumn.setEditable(true);   //Hit ner yoyo
         //StatusLevel
-        TableColumn<Member, String> statusLevelColumn = new TableColumn<>("Statuslevel");
+        TableColumn<Member, StatusLevel> statusLevelColumn = new TableColumn<>("Statuslevel");
         statusLevelColumn.setMinWidth(100);
         statusLevelColumn.setCellValueFactory(new PropertyValueFactory<>("statusLevel"));
-        // Choices from enum
-        ObservableList<String> statusChoice = FXCollections.observableArrayList(
-                Arrays.stream(StatusLevel.values()).map(StatusLevel::toString).toArray(String[]::new)
+        statusLevelColumn.setCellFactory(ComboBoxTableCell.forTableColumn(StatusLevel.values())
         );
-
+        memberTable.setEditable(true);
         statusLevelColumn.setEditable(true);
-        // ComboBox for enums
-        statusLevelColumn.setCellFactory(ComboBoxTableCell.forTableColumn(new StringConverter<String>() {
-            @Override
-            public String toString(String object) {
-                return object;
-            }
 
-            @Override
-            public String fromString(String string) {
-                return string;
-            }
-        }, statusChoice.toArray(new String[0])));
-        // Write string back to member
-        statusLevelColumn.setOnEditCommit(memberStringCellEditEvent -> {
-            Member newStatusMember = memberStringCellEditEvent.getRowValue();
-            String newValue = memberStringCellEditEvent.getNewValue();
-            // Här kan vi utveckla nå fint Exception
-            if (newValue != null) {
-                newStatusMember.setStatusLevel(newValue);
-            }
+        statusLevelColumn.setOnEditCommit(event ->{
+            Member newStatusMember = event.getRowValue();
+            StatusLevel newStatusLevel = event.getNewValue();
+
+            newStatusMember.setStatusLevel(newStatusLevel);
+            membershipService.updateMember(newStatusMember);
         });
 
         //add to tableView
@@ -355,8 +321,12 @@ public class Main extends Application {
         nameInput.setPromptText("Name");
         nameInput.setMinWidth(100);     //Behövs bara i första så följer resten bredden.
         //StatusLevel
-        statusLevelInput = new TextField();
-        statusLevelInput.setPromptText("Statuslevel");
+        statusLevelBox = new ComboBox<>();
+        statusLevelBox.getItems().addAll(StatusLevel.values());
+        statusLevelBox.setPromptText("Status Level");
+        statusLevelBox.setMinWidth(100);
+
+
 
         //Buttons
 
@@ -402,7 +372,7 @@ public class Main extends Application {
         VBox memberBox = new VBox();
         memberBox.setPadding(new Insets(10));
         memberBox.setSpacing(10);
-        memberBox.getChildren().addAll(rentButton, idInput, nameInput, statusLevelInput, addButton, deleteButton,
+        memberBox.getChildren().addAll(rentButton, idInput, nameInput, statusLevelBox, addButton, deleteButton,
                  returnButton, historyButton);
 
         HBox itemBox = new HBox();
@@ -442,6 +412,8 @@ public class Main extends Application {
         activeRentalsVbox.getChildren().addAll(activeRentalsLabel, activeRentalsTable);
 
         VBox exitBox = new VBox();
+        exitBox.setPadding(new Insets(10));
+        exitBox.setSpacing(10);
         exitBox.getChildren().addAll(totalRevenueButton, exitButton);
 
         HBox rentedHbox = new HBox();
@@ -538,15 +510,30 @@ public class Main extends Application {
         }
     }
 
-    public void addButtonClicked() {
-        System.out.println("returnButtonClicked() called");
-        membershipService.addMember(
-                Integer.parseInt(idInput.getText()),  // Här ska det in nå fina Exceptions osså
-                nameInput.getText(),
-                statusLevelInput.getText());
-        idInput.clear();
-        nameInput.clear();
-        statusLevelInput.clear();
+        public void addButtonClicked() {
+        try {
+            int id = Integer.parseInt(idInput.getText().trim());
+            membershipService.addMember(
+                    id,
+                    nameInput.getText(),
+                    statusLevelBox.getValue()
+            );
+            idInput.clear();
+            nameInput.clear();
+            statusLevelBox.getSelectionModel().clearSelection();
+        }catch(NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "ID error", "ID must be a number");
+        }catch(NumberOverZeroException e) {
+            showAlert(Alert.AlertType.ERROR, "No negative ID:s", "ID must be over 0");
+        } catch (InvalidMemberDataException e) {
+            showAlert(Alert.AlertType.ERROR, "Member error", "please fill out the form properly");
+        } catch (AlreadyExistsException e) {
+            showAlert(Alert.AlertType.ERROR, "Invalid ID", "ID allready exists");
+        }catch (MissingStatusException e){
+            showAlert(Alert.AlertType.INFORMATION, "No status", "please select a status");
+        } catch(Exception e){
+            System.out.println("Error" + e.getMessage());
+        }
     }
 
     public void deleteButtonClicked() {

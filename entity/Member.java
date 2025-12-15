@@ -14,7 +14,7 @@ public class Member {
 
     private int id;        //removed final so I can have empty constructor with Json/jackson
     private String name;
-    private String statusLevel;
+    private StatusLevel statusLevel;
     @JsonIgnore
     private final ObservableList<Rental> rentalHistory = FXCollections.observableArrayList();
 
@@ -24,7 +24,7 @@ public class Member {
 
     }
 
-    public Member(int id,String name, String statusLevel) {
+    public Member(int id,String name, StatusLevel statusLevel) {
         this.id = id;
         this.name = name;
         this.statusLevel = statusLevel;
@@ -45,14 +45,12 @@ public class Member {
         this.name = name;
     }
 
-    public String getStatusLevel() {
+    public StatusLevel getStatusLevel() {
         return statusLevel;
     }
-
-    public void setStatusLevel(String statusLevel) {
+    public void setStatusLevel(StatusLevel statusLevel) {
         this.statusLevel = statusLevel;
     }
-
     public ObservableList<Rental> getRentalHistory() {
         return rentalHistory;
     }

@@ -23,22 +23,12 @@ public class Inventory extends PersistenceLayer {
     public Inventory() {
         loadFromFile();
     }
-    // Listener
-    //items.addListener(ListChangeListener<Item>) changer -> saveToFile());
 
     public ObservableList<Item> getItems() {
         return inventoryList;
     }
 
     public void addItem(Item newItem) {
-        if (newItem == null) {
-            throw new IllegalArgumentException("Item can't be null");
-        }
-        boolean existsId = inventoryList.stream().anyMatch(items -> items.getId() == newItem.getId());
-        if (existsId) {
-            throw new IllegalArgumentException("Item with Id " + newItem.getId() + "allready exists in inventory"
-            );
-        }
         inventoryList.add(newItem);
         saveItemFile();
     }
