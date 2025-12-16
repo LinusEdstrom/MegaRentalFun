@@ -13,6 +13,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -99,6 +100,27 @@ public class Main extends Application {
         itemTable = new TableView();
         itemTable.setEditable(true);    //Ändra i items
 
+        //TODO FilteredList
+        FilteredList<Item> filteredItems = new FilteredList<>(rentalService.getItems(), item ->true);
+        itemTable.setItems(filteredItems);
+
+        ComboBox<String> filterBox = new ComboBox<>();
+        filterBox.getItems().addAll("All", "Action", "RomCom");
+        filterBox.setValue("All");
+
+        filterBox.setOnAction(eventSubs -> {
+                    System.out.println("Filter selected: " + filterBox.getValue());
+                    String filter = filterBox.getValue();
+                    filteredItems.setPredicate(item -> {
+
+               if("Action".equals(filter)) return item instanceof Action;
+               if("RomCom".equals(filter)) return item instanceof RomCom;
+
+                return true;
+
+        });
+        });
+
         //columns
         //Id
         TableColumn<Item, Integer> itemIdColumn = new TableColumn<>("item-Id");
@@ -176,7 +198,6 @@ public class Main extends Application {
         //this.<Item>
         makeEditableDoubleColumn(itemTable, basePriceColumn, Item::setBasePrice);
 
-        itemTable.setItems(rentalService.getItems());
         itemTable.getColumns().addAll(itemIdColumn, titleColumn, basePriceColumn, lengthColumn, explosionsColumn,
                 coolOnelinersColumn, cheezinessColumn, hunksColumn);
 
@@ -326,8 +347,6 @@ public class Main extends Application {
         statusLevelBox.setPromptText("Status Level");
         statusLevelBox.setMinWidth(100);
 
-
-
         //Buttons
 
         //Rent button
@@ -378,7 +397,7 @@ public class Main extends Application {
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
         itemBox.setSpacing(10);
-        itemBox.getChildren().addAll(itemIdInput, titleInput, basePriceInput,
+        itemBox.getChildren().addAll(filterBox, itemIdInput, titleInput, basePriceInput,
                 subComboBox, extra1, extra2, extra3, itemAddButton);
 
         Label movieLabel = new Label("Rentable movies");
@@ -399,7 +418,7 @@ public class Main extends Application {
         VBox itemVbox = new VBox();
         itemVbox.setPadding(new Insets(10));
         itemVbox.setSpacing(10);
-        itemVbox.getChildren().addAll(movieLabel, itemTable, itemBox);
+        itemVbox.getChildren().addAll(movieLabel, itemTable , itemBox);
 
         VBox memberTableVbox = new VBox();
         memberTableVbox.setPadding(new Insets (10));
