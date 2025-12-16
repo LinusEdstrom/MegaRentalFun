@@ -356,10 +356,12 @@ public class Main extends Application {
 
         //Return button
         Button returnButton = new Button("Return move");
+        returnButton.setId("returnButton");
         returnButton.setOnAction(event -> returnButtonClicked());
 
         //Add member
         Button addButton = new Button("Add member");
+        addButton.setId("addButton");
         addButton.setOnAction(event -> addButtonClicked());
 
         //Delete member
@@ -389,9 +391,9 @@ public class Main extends Application {
         });
 
         VBox memberBox = new VBox();
-        memberBox.setPadding(new Insets(10));
+        memberBox.setPadding(new Insets(80, 10, 10 , 10));
         memberBox.setSpacing(10);
-        memberBox.getChildren().addAll(rentButton, idInput, nameInput, statusLevelBox, addButton, deleteButton,
+        memberBox.getChildren().addAll(rentButton,
                  returnButton, historyButton);
 
         HBox itemBox = new HBox();
@@ -420,10 +422,15 @@ public class Main extends Application {
         itemVbox.setSpacing(10);
         itemVbox.getChildren().addAll(movieLabel, itemTable , itemBox);
 
+        HBox addMemberHbox = new HBox();
+        addMemberHbox.setPadding(new Insets(10,10,10,10));
+        addMemberHbox.setSpacing(10);
+        addMemberHbox.getChildren().addAll(idInput, nameInput, statusLevelBox, addButton);
+
         VBox memberTableVbox = new VBox();
         memberTableVbox.setPadding(new Insets (10));
         memberTableVbox.setSpacing(10);
-        memberTableVbox.getChildren().addAll(memberLabel, memberTable);
+        memberTableVbox.getChildren().addAll(memberLabel, memberTable, addMemberHbox);
 
         VBox activeRentalsVbox = new VBox();
         activeRentalsVbox.setPadding(new Insets(10));
@@ -433,11 +440,16 @@ public class Main extends Application {
         VBox exitBox = new VBox();
         exitBox.setPadding(new Insets(10));
         exitBox.setSpacing(10);
-        exitBox.getChildren().addAll(totalRevenueButton, exitButton);
+        exitBox.getChildren().addAll(deleteButton, totalRevenueButton, exitButton);
+
+        VBox returnVbox = new VBox();
+        returnVbox.setPadding(new Insets(10));
+        returnVbox.setSpacing(10);
+        returnVbox.getChildren().addAll(returnButton);
 
         HBox rentedHbox = new HBox();
         rentedHbox.setPadding(new Insets(10));
-        rentedHbox.getChildren().addAll(activeRentalsVbox, exitBox);
+        rentedHbox.getChildren().addAll(activeRentalsVbox, returnVbox, exitBox);
 
         Label welcome = new Label("Welcome to Wigells Retro Rentals!");
         welcome.setMaxWidth(Double.MAX_VALUE);
