@@ -103,8 +103,8 @@ public class Main extends Application {
         itemTable.setItems(filteredItems);
 
         ComboBox<String> filterBox = new ComboBox<>();
-        filterBox.getItems().addAll("All", "Action", "RomCom");
-        filterBox.setValue("All");
+        filterBox.getItems().addAll("Filter Movies", "Action", "RomCom");
+        filterBox.setValue("Filter Movies");
 
         filterBox.setOnAction(eventSubs -> {
                     System.out.println("Filter selected: " + filterBox.getValue());
@@ -220,6 +220,7 @@ public class Main extends Application {
         ComboBox<String> subComboBox = new ComboBox<>(
                 FXCollections.observableArrayList("Action", "RomCom")
         );
+        subComboBox.setPromptText("genre");
         TextField extra1 = new TextField(); // Båda har samma
         TextField extra2 = new TextField();
         TextField extra3 = new TextField();
@@ -246,6 +247,7 @@ public class Main extends Application {
         });
         // itemAddButton
         Button itemAddButton = new Button("Add Item");
+        itemAddButton.setId("itemAddButton");
         itemAddButton.setOnAction(itemAdder -> {
                     try {
                         int id = Integer.parseInt(itemIdInput.getText().trim());
@@ -262,7 +264,7 @@ public class Main extends Application {
                         Stream.of(itemIdInput, titleInput, basePriceInput, extra1, extra2, extra3)
                                 .forEach(TextInputControl::clear);
                         subComboBox.getSelectionModel().clearSelection();
-                        showAlert(Alert.AlertType.INFORMATION, "Item added", "succesfully to your inventory");
+                        showAlert(Alert.AlertType.INFORMATION, "Item added", title + " succesfully added to your inventory");
 
                     } catch (NumberFormatException e) {
                         showAlert(Alert.AlertType.ERROR, "Error", "Numeric fields must be numbers");
@@ -397,8 +399,8 @@ public class Main extends Application {
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
         itemBox.setSpacing(10);
-        itemBox.getChildren().addAll(filterBox, itemIdInput, titleInput, basePriceInput,
-                subComboBox, extra1, extra2, extra3, itemAddButton);
+        itemBox.getChildren().addAll( itemIdInput, titleInput, basePriceInput,
+                subComboBox, extra1, extra2, extra3, itemAddButton, filterBox);
 
         Label movieLabel = new Label("Rentable movies");
         movieLabel.setId("movieLabel");
@@ -469,9 +471,6 @@ public class Main extends Application {
         borderPane.setRight(memberTableVbox);
         borderPane.setBottom(rentedHbox);
 
-        
-
-
 
         Scene scene = new Scene(borderPane);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
@@ -482,7 +481,6 @@ public class Main extends Application {
     }
 
     public void rentButtonClicked() {
-        System.out.println("rentButtonClicked() called");
         Member selectedMember = memberTable.getSelectionModel().getSelectedItem();
         Item selectedItem = itemTable.getSelectionModel().getSelectedItem();
 
@@ -510,6 +508,7 @@ public class Main extends Application {
             }
             if (days > 7) {
                 showAlert(Alert.AlertType.INFORMATION, "Sorry!", "Max renting time is seven days");
+                return;
             }
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Enter a valid number please");
@@ -521,7 +520,7 @@ public class Main extends Application {
             showAlert(Alert.AlertType.WARNING, "Oh no!", "It is allready rented!");
             return;
         } else {
-            itemTable.getItems().remove(selectedItem);  // Ta bort det från tableView när de är uthyrt
+           // itemTable.getItems().remove(selectedItem);  // Ta bort det från tableView när de är uthyrt
             itemTable.refresh();
             showAlert(Alert.AlertType.INFORMATION, "Rent done!", selectedMember.getName() + " rented " +
                     selectedItem.getTitle() + " for " + days + " days!\n To pay " + String.format("%.2f", rental.getTotalPrice()));
@@ -529,7 +528,6 @@ public class Main extends Application {
     }
 
     public void returnButtonClicked() {
-        System.out.println("returnButtonClicked() called");
         Rental selectedRental = activeRentalsTable.getSelectionModel().getSelectedItem();
         if (selectedRental == null) {
             showAlert(Alert.AlertType.ERROR, "ERROR", "Select a movie to return please");
@@ -537,9 +535,9 @@ public class Main extends Application {
         }
         boolean returnedRental = rentalService.returnRental(selectedRental);
         if (returnedRental) {
-            activeRentalsTable.getItems().remove(selectedRental);
-            itemTable.getItems().add(selectedRental.getItem());         //Få tebax det i itemTable listan igen
+            activeRentalsTable.refresh();
             itemTable.refresh();
+
             showAlert(Alert.AlertType.INFORMATION, "Return done!", selectedRental.getItem().getTitle() + " returned by " + selectedRental.getMember().getName());
         } else {
             showAlert(Alert.AlertType.ERROR, "Error", "Return failed");
@@ -581,9 +579,9 @@ public class Main extends Application {
             return;
         }
         try {
-            membershipService.deleteMember(selectedMember, allMembers);
+            membershipService.deleteMember(selectedMember);
             showAlert(Alert.AlertType.INFORMATION, "Deleted", "Selected member removed from area");
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidMemberDataException e) {
             showAlert(Alert.AlertType.WARNING, "Error ", e.getMessage());
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", " Failed to delete member " + e.getMessage());

@@ -45,15 +45,16 @@ public class MembershipService {
         }
     }
 
-    public void deleteMember(ObservableList<Member> selectedMember, ObservableList<Member> allMembers){
-    // In här med nå feta Exceptions
+    public void deleteMember(ObservableList<Member> selectedMember) {
     if (selectedMember == null || selectedMember.isEmpty()) {
-        throw new IllegalArgumentException("U have to select a member to delete!");
+        throw new InvalidMemberDataException("U have to select a member to delete!");
         }
+        ObservableList<Member> allMembers = memberRegistry.getMembers();
         new ArrayList<>(selectedMember).forEach(deletedMember ->{
             allMembers.remove(deletedMember);
             memberRegistry.removeMemberById(deletedMember.getId());
         });
+        memberRegistry.saveMemberFile();
     }
     public ObservableList<Member> getMembers(){
         return memberRegistry.getMembers();

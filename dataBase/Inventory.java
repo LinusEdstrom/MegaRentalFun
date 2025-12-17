@@ -56,7 +56,7 @@ public class Inventory extends PersistenceLayer {
         }
     }
 
-    private void saveItemFile() {
+    public void saveItemFile() {
         try {
             // Build array with type field
             ArrayNode nodeSubObject = mapper.createArrayNode();

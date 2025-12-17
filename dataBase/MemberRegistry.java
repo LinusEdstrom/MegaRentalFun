@@ -69,7 +69,7 @@ public class MemberRegistry extends PersistenceLayer {
             System.out.println("The members are gone!! " + e.getMessage());
         }
     }
-    private void saveMemberFile(){
+    public void saveMemberFile(){
         try {
             mapper.writeValue(jsonMembers, new ArrayList<>(memberList));
         }catch (IOException e){

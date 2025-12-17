@@ -58,6 +58,7 @@ public class RentalService {
                 throw new InvalidItemDataException(" This is not a valid type " + subType);
         }
         inventory.getItems().add(newItem);
+        inventory.saveItemFile();
     }
 
         private PricePolicy getPolicy(Member rentMember){
@@ -89,6 +90,7 @@ public class RentalService {
         activeRentals.add(rentalMirr);
 
         item.setAvailable(false);
+        inventory.getItems().remove(item);
 
         return rentalMirr;
     }
@@ -99,7 +101,14 @@ public class RentalService {
         Item returnedItem = returnedRental.getItem();
         if (returnedItem != null) {
             returnedItem.setAvailable(true);
+
+            ObservableList<Item> items = inventory.getItems();
+            if(!items.contains(returnedItem)){
+                items.add(returnedItem);
+            }
+            inventory.saveItemFile();
         }
+
         activeRentals.remove(returnedRental);
         return true;
 
