@@ -52,7 +52,7 @@ public class MembershipService {
         }
         new ArrayList<>(selectedMember).forEach(deletedMember ->{
             allMembers.remove(deletedMember);
-            memberRegistry.removeMemberById(deletedMember.getId());//Bara trams att göra en stream för det här.
+            memberRegistry.removeMemberById(deletedMember.getId());
         });
     }
     public ObservableList<Member> getMembers(){

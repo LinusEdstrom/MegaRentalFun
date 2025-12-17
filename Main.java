@@ -21,9 +21,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
@@ -355,7 +353,7 @@ public class Main extends Application {
         rentButton.setOnAction(rentEvent -> rentButtonClicked());
 
         //Return button
-        Button returnButton = new Button("Return move");
+        Button returnButton = new Button("Return movie");
         returnButton.setId("returnButton");
         returnButton.setOnAction(event -> returnButtonClicked());
 
@@ -366,6 +364,7 @@ public class Main extends Application {
 
         //Delete member
         Button deleteButton = new Button("Remove member");
+        deleteButton.setId("deleteButton");
         deleteButton.setOnAction(event -> deleteButtonClicked());
 
         //historyButton
@@ -392,9 +391,8 @@ public class Main extends Application {
 
         VBox memberBox = new VBox();
         memberBox.setPadding(new Insets(80, 10, 10 , 10));
-        memberBox.setSpacing(10);
-        memberBox.getChildren().addAll(rentButton,
-                 returnButton, historyButton);
+        memberBox.setSpacing(30);
+        memberBox.getChildren().addAll(rentButton, historyButton);
 
         HBox itemBox = new HBox();
         itemBox.setPadding(new Insets(10, 10, 10, 10));
@@ -427,6 +425,13 @@ public class Main extends Application {
         addMemberHbox.setSpacing(10);
         addMemberHbox.getChildren().addAll(idInput, nameInput, statusLevelBox, addButton);
 
+        VBox exitBox = new VBox();
+        exitBox.setPadding(new Insets(30, 10, 10, 10));
+        exitBox.setSpacing(30);
+        exitBox.setAlignment(Pos.BASELINE_RIGHT);
+
+        exitBox.getChildren().addAll(deleteButton, totalRevenueButton, exitButton);
+
         VBox memberTableVbox = new VBox();
         memberTableVbox.setPadding(new Insets (10));
         memberTableVbox.setSpacing(10);
@@ -437,19 +442,19 @@ public class Main extends Application {
         activeRentalsVbox.setSpacing(10);
         activeRentalsVbox.getChildren().addAll(activeRentalsLabel, activeRentalsTable);
 
-        VBox exitBox = new VBox();
-        exitBox.setPadding(new Insets(10));
-        exitBox.setSpacing(10);
-        exitBox.getChildren().addAll(deleteButton, totalRevenueButton, exitButton);
+
 
         VBox returnVbox = new VBox();
-        returnVbox.setPadding(new Insets(10));
+        returnVbox.setPadding(new Insets(60, 10, 10, 10));
         returnVbox.setSpacing(10);
         returnVbox.getChildren().addAll(returnButton);
 
+        Region emptySpace = new Region();
+        HBox.setHgrow(emptySpace, Priority.ALWAYS);
+
         HBox rentedHbox = new HBox();
         rentedHbox.setPadding(new Insets(10));
-        rentedHbox.getChildren().addAll(activeRentalsVbox, returnVbox, exitBox);
+        rentedHbox.getChildren().addAll(activeRentalsVbox, returnVbox, emptySpace, exitBox);
 
         Label welcome = new Label("Welcome to Wigells Retro Rentals!");
         welcome.setMaxWidth(Double.MAX_VALUE);
@@ -633,7 +638,7 @@ public class Main extends Application {
     }
 
     private <T> void makeEditableStringColumn(
-            TableView<T> table, // itemTable     // Gör en Overload för Doubles också, lär ju ska ha en för ints osså, lööööl
+            TableView<T> table,
             TableColumn<T, String> column,
             BiConsumer<T, String> setter
     ) {
